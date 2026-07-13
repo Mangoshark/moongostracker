@@ -323,6 +323,9 @@ const firebaseConfig = {
 };
 const CLOUD_ENABLED = firebaseConfig.apiKey !== "AIzaSyASDyhK0ySwtX32GrqDzw7J6xwP7D9_5Rs";
 
+console.log("✅ Config loaded");
+console.log("CLOUD_ENABLED =", firebaseConfig.apiKey !== "YOUR_API_KEY");
+     
 let auth = null, db = null;
 if(CLOUD_ENABLED){
   firebase.initializeApp(firebaseConfig);
