@@ -293,11 +293,106 @@
   .circuit-tpl-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
   .circuit-tpl-head strong{font-family:'Barlow Condensed';font-size:17px;letter-spacing:0.02em;text-transform:uppercase;}
 
+  /* Save status pill */
+  .save-pill{
+    font-family:'Barlow Condensed';font-weight:700;font-size:12px;letter-spacing:0.03em;text-transform:uppercase;
+    padding:5px 11px;border-radius:999px;background:var(--line);color:var(--ink-soft);
+    display:inline-flex;align-items:center;gap:5px;transition:background .25s,color .25s;
+  }
+  .save-pill.saving{background:var(--yellow);color:var(--ink);}
+  .save-pill.saved{background:var(--leaf);color:#fff;}
+  .save-pill .dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+
+  /* Autofill suggestion bar */
+  .autofill-bar{
+    display:none;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    background:#FFF3E0;border:1.5px dashed var(--mango);border-radius:10px;
+    padding:8px 12px;margin-top:8px;font-size:13px;color:var(--mango-deep);font-weight:600;
+  }
+  .autofill-bar.show{display:flex;}
+  .autofill-bar button{white-space:nowrap;}
+  .row-fill{background:none;border:none;color:var(--mango-deep);font-size:12px;font-weight:700;cursor:pointer;padding:2px 6px;text-decoration:underline;}
+  .row-fill:hover{color:var(--tomato);}
+
+  /* Hamburger + mobile drawer */
+  .hamburger{
+    display:none;flex-direction:column;justify-content:center;gap:4px;
+    width:38px;height:34px;border:none;background:transparent;cursor:pointer;padding:0;
+  }
+  .hamburger span{display:block;width:100%;height:3px;border-radius:2px;background:var(--ink);}
+  .drawer-overlay{
+    display:none;position:fixed;inset:0;background:rgba(43,35,24,0.45);z-index:19;
+  }
+  .drawer-overlay.open{display:block;}
+  .drawer{
+    position:fixed;top:0;right:-280px;width:260px;height:100%;background:var(--paper);z-index:20;
+    box-shadow:-4px 0 20px rgba(43,35,24,0.2);padding:20px 16px;transition:right .25s ease;
+    display:flex;flex-direction:column;gap:6px;overflow-y:auto;
+  }
+  .drawer.open{right:0;}
+  .drawer .tab{width:100%;text-align:left;font-size:16px;padding:11px 14px;}
+  .drawer-close{align-self:flex-end;}
+
+  /* Profile card */
+  .profile-form{display:flex;flex-direction:column;gap:12px;max-width:420px;margin-bottom:24px;}
+  .profile-form label{font-family:'Barlow Condensed';font-weight:700;font-size:13px;letter-spacing:0.03em;text-transform:uppercase;color:var(--ink-soft);}
+  .avatar-row{display:flex;align-items:center;gap:14px;}
+  .avatar-preview{
+    width:72px;height:72px;border-radius:50%;object-fit:cover;background:var(--line);
+    border:3px solid var(--mango);
+  }
+  .toplift-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .toplift-row select{flex:1;min-width:130px;}
+
+  .card-stage{display:flex;flex-direction:column;align-items:center;gap:16px;}
+  .gcard{
+    position:relative;width:340px;max-width:100%;border-radius:22px;overflow:hidden;
+    background:linear-gradient(160deg,#FFC845 0%,#FF8A3D 46%,#E8492A 100%);
+    box-shadow:0 12px 30px rgba(232,73,42,0.28);color:#fff;padding:3px;
+  }
+  .gcard-inner{
+    background:linear-gradient(180deg,rgba(255,255,255,0.08),rgba(0,0,0,0.12));
+    border-radius:20px;padding:22px 20px 18px;position:relative;
+  }
+  .gcard-corner{position:absolute;width:26px;height:26px;opacity:0.85;}
+  .gcard-corner.tl{top:8px;left:8px;border-top:2px solid #fff;border-left:2px solid #fff;border-radius:6px 0 0 0;}
+  .gcard-corner.tr{top:8px;right:8px;border-top:2px solid #fff;border-right:2px solid #fff;border-radius:0 6px 0 0;}
+  .gcard-corner.bl{bottom:8px;left:8px;border-bottom:2px solid #fff;border-left:2px solid #fff;border-radius:0 0 0 6px;}
+  .gcard-corner.br{bottom:8px;right:8px;border-bottom:2px solid #fff;border-right:2px solid #fff;border-radius:0 0 6px 0;}
+  .gcard-head{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+  .gcard-avatar{
+    width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid #fff;
+    box-shadow:0 0 0 3px rgba(255,255,255,0.35);background:rgba(255,255,255,0.25);
+    display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-weight:800;font-size:24px;
+  }
+  .gcard-name{font-family:'Barlow Condensed';font-weight:800;font-size:24px;letter-spacing:0.02em;text-transform:uppercase;line-height:1.05;}
+  .gcard-tag{font-size:11.5px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.85;font-weight:600;}
+  .gcard-bio{
+    font-size:13px;line-height:1.5;background:rgba(0,0,0,0.16);border-radius:10px;padding:10px 12px;margin-bottom:14px;
+    min-height:20px;
+  }
+  .gcard-stats{display:flex;flex-direction:column;gap:8px;}
+  .gcard-stat{
+    display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.16);
+    border-radius:10px;padding:9px 12px;backdrop-filter:blur(2px);
+  }
+  .gcard-stat .rank{
+    font-family:'Barlow Condensed';font-weight:800;font-size:15px;width:22px;height:22px;border-radius:50%;
+    background:var(--ink);color:var(--yellow);display:flex;align-items:center;justify-content:center;margin-right:8px;
+  }
+  .gcard-stat .exname{font-weight:700;font-size:13.5px;flex:1;}
+  .gcard-stat .exval{font-family:'Barlow Condensed';font-weight:800;font-size:17px;}
+  .gcard-foot{margin-top:14px;text-align:center;font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;opacity:0.75;}
+
   @media (max-width:640px){
     .day-title{font-size:24px;}
     .week-grid{grid-template-columns:repeat(2,1fr);}
     .week-row{grid-template-columns:28px repeat(7,minmax(0,1fr));}
     .weekday-row{grid-template-columns:28px repeat(7,1fr);}
+    .tabs{display:none;}
+    .hamburger{display:flex;}
+    .nav{padding:14px 16px;}
+    .brand{font-size:22px;}
   }
 </style>
 </head>
@@ -524,20 +619,49 @@ function renderAuthUI(){
   }
   return `<div class="auth-box"><button class="btn small" onclick="signIn()">Sign in with Google</button></div>`;
 }
+const NAV_TABS = [['day','Log'],['week','Week'],['month','Month'],['progress','Progress'],
+  ['profile','Profile'],['exercises','Exercises'],['circuits','Circuits'],['export','Export']];
+
 function renderNav(){
-  const tabs = [['day','Log'],['week','Week'],['month','Month'],['progress','Progress'],['exercises','Exercises'],['circuits','Circuits'],['export','Export']];
   return `<div class="nav">
     <div class="brand">
       <div class="barbell"><div class="plate g"></div><div class="plate y"></div><div class="bar"></div><div class="plate y"></div><div class="plate"></div></div>
       Mngo
     </div>
     <div class="tabs">
-      ${tabs.map(([v,l])=>`<button class="tab ${App.view===v?'active':''}" onclick="setView('${v}')">${l}</button>`).join('')}
+      ${NAV_TABS.map(([v,l])=>`<button class="tab ${App.view===v?'active':''}" onclick="setView('${v}')">${l}</button>`).join('')}
     </div>
+    <span class="save-pill" id="save-pill"><span class="dot"></span><span id="save-pill-text">Saved</span></span>
     ${renderAuthUI()}
+    <button class="hamburger" onclick="openDrawer()" aria-label="Open menu"><span></span><span></span><span></span></button>
+  </div>
+  <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <button class="icon-btn drawer-close" onclick="closeDrawer()">✕</button>
+    ${NAV_TABS.map(([v,l])=>`<button class="tab ${App.view===v?'active':''}" onclick="setView('${v}');closeDrawer()">${l}</button>`).join('')}
+    <div style="margin-top:10px;">${renderAuthUI()}</div>
   </div>`;
 }
 function setView(v){ App.view = v; render(); }
+function openDrawer(){ document.getElementById('drawer').classList.add('open'); document.getElementById('drawer-overlay').classList.add('open'); }
+function closeDrawer(){ document.getElementById('drawer').classList.remove('open'); document.getElementById('drawer-overlay').classList.remove('open'); }
+
+/* ---------- save status pill ---------- */
+let saveIndicatorTimer = null;
+function markSaving(){
+  const pill = document.getElementById('save-pill'); if(!pill) return;
+  pill.className = 'save-pill saving';
+  document.getElementById('save-pill-text').textContent = 'Saving…';
+}
+function markSaved(){
+  const pill = document.getElementById('save-pill'); if(!pill) return;
+  pill.className = 'save-pill saved';
+  document.getElementById('save-pill-text').textContent = 'Saved';
+  clearTimeout(saveIndicatorTimer);
+  saveIndicatorTimer = setTimeout(()=>{
+    if(pill) { pill.className = 'save-pill'; document.getElementById('save-pill-text').textContent = 'Saved'; }
+  }, 1500);
+}
 
 /* ---------- MAIN RENDER ---------- */
 async function render(){
@@ -551,18 +675,43 @@ async function render(){
   else if(App.view==='exercises') html = await renderExercisesView();
   else if(App.view==='circuits') html = await renderCircuitsView();
   else if(App.view==='export') html = await renderExportView();
+  else if(App.view==='profile') html = await renderProfileView();
   document.getElementById('main').innerHTML = html;
+}
+
+/* ---------- in-memory day cache + debounced autosave ----------
+   The day currently open is kept in memory so every keystroke/click just
+   mutates this object and patches the DOM directly — no full page
+   re-render, no lost scroll position, no lost focus while typing. */
+const DayCache = {};
+const saveTimers = {};
+const miscTimers = {};
+function getDC(ds){ return DayCache[ds]; }
+function queueSave(ds, delay=500){
+  markSaving();
+  clearTimeout(saveTimers[ds]);
+  saveTimers[ds] = setTimeout(async ()=>{ await saveDay(ds, DayCache[ds]); markSaved(); }, delay);
+}
+function saveNow(ds){
+  markSaving();
+  clearTimeout(saveTimers[ds]);
+  saveDay(ds, DayCache[ds]).then(markSaved);
+}
+function debounce(key, fn, delay=500){
+  clearTimeout(miscTimers[key]);
+  miscTimers[key] = setTimeout(fn, delay);
 }
 
 /* ================= DAY VIEW ================= */
 async function renderDayView(){
   const ds = dateStr(App.date);
-  const data = await getDay(ds);
+  DayCache[ds] = await getDay(ds);
   const ex = await getExercises();
   const circuits = await getCircuits();
   const isToday = sameDate(App.date, today0());
   const label = App.date.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
 
+  const data = DayCache[ds];
   let liftsHtml = '';
   if(data.lifts.length===0){
     liftsHtml = `<div class="empty-note">Nothing logged yet. Add an exercise or circuit to get started.</div>`;
@@ -586,7 +735,7 @@ async function renderDayView(){
         <button class="btn ghost small" onclick="dvViewMonth()">View Month</button>
       </div>
     </div>
-    ${liftsHtml}
+    <div id="lifts-list">${liftsHtml}</div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;">
       <button class="btn" onclick="dvAddLift('${ds}')">+ Add Exercise</button>
       <button class="btn ghost" onclick="dvAddCircuitLift('${ds}')">+ Add Circuit</button>
@@ -594,65 +743,124 @@ async function renderDayView(){
   `;
 }
 
+/* ---- autofill suggestion: if an earlier set is fully filled and later
+   sets in the same lift are blank, offer to copy those values forward
+   (à la Hevy/TeamBuildr "same as last set"). ---- */
+function autofillSuggestion(sets, isCircuit){
+  if(!sets || sets.length===0) return null;
+  let lastFilled = null, blanksAfter = [];
+  for(let i=0;i<sets.length;i++){
+    const s = sets[i];
+    const filled = isCircuit
+      ? (s.rounds!=='' && s.rounds!=null)
+      : (s.reps!=='' && s.reps!=null && s.amount!=='' && s.amount!=null);
+    if(filled){ lastFilled = s; blanksAfter = []; }
+    else if(lastFilled){ blanksAfter.push(i); }
+  }
+  if(lastFilled && blanksAfter.length>0) return { source:lastFilled, indices:blanksAfter };
+  return null;
+}
+function renderAutofillBar(ds, liftId, sets, isCircuit){
+  const sug = autofillSuggestion(sets, isCircuit);
+  if(!sug) return `<div class="autofill-bar" id="af-${liftId}"></div>`;
+  const label = isCircuit ? `${sug.source.rounds}× rounds` : `${sug.source.reps} reps × ${sug.source.amount}`;
+  return `<div class="autofill-bar show" id="af-${liftId}">
+    <span>Fill ${sug.indices.length} remaining set${sug.indices.length>1?'s':''} with ${esc(label)}?</span>
+    <button class="btn small" onclick="dvFillRemaining('${ds}','${liftId}')">Use</button>
+  </div>`;
+}
+function refreshAutofillBar(ds, liftId){
+  const d = getDC(ds); const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
+  const bar = document.getElementById('af-'+liftId);
+  if(bar) bar.outerHTML = renderAutofillBar(ds, liftId, l.sets, l.kind==='circuit');
+}
+function dvFillRemaining(ds, liftId){
+  const d = getDC(ds); const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
+  const isCircuit = l.kind==='circuit';
+  const sug = autofillSuggestion(l.sets, isCircuit);
+  if(!sug) return;
+  sug.indices.forEach(i=>{
+    if(isCircuit) l.sets[i].rounds = sug.source.rounds;
+    else { l.sets[i].reps = sug.source.reps; l.sets[i].amount = sug.source.amount; }
+  });
+  saveNow(ds);
+  refreshSetsTable(ds, liftId);
+}
+
+function renderSingleSetRow(ds, lift, i, isCircuit, isDist){
+  const s = lift.sets[i];
+  if(isCircuit){
+    return `<tr>
+      <td>${i+1}</td>
+      <td><input type="number" min="0" value="${s.rounds ?? ''}" placeholder="times"
+            oninput="dvSetField('${ds}','${lift.id}',${i},'rounds',this.value)"></td>
+      <td style="text-align:center"><input type="checkbox" class="chk done" ${s.completed?'checked':''}
+            onchange="dvToggleSetBool('${ds}','${lift.id}',${i},'completed')" title="Completed"></td>
+      <td><button class="row-del" onclick="dvRemoveSet('${ds}','${lift.id}',${i})" title="Remove">✕</button></td>
+    </tr>`;
+  }
+  return `<tr>
+    <td>${i+1}</td>
+    <td><input type="number" min="0" value="${s.reps ?? ''}" placeholder="reps"
+          oninput="dvSetField('${ds}','${lift.id}',${i},'reps',this.value)"></td>
+    <td><input type="number" min="0" step="${isDist?1:2.5}" value="${s.amount ?? ''}" placeholder="${isDist?'metres':'lbs'}"
+          oninput="dvSetField('${ds}','${lift.id}',${i},'amount',this.value)"></td>
+    <td style="text-align:center"><input type="checkbox" class="chk done" ${s.completed?'checked':''}
+          onchange="dvToggleSetBool('${ds}','${lift.id}',${i},'completed')" title="Completed"></td>
+    <td style="text-align:center"><input type="checkbox" class="chk pr" ${s.pr?'checked':''}
+          onchange="dvToggleSetBool('${ds}','${lift.id}',${i},'pr')" title="PR"></td>
+    <td><button class="row-del" onclick="dvRemoveSet('${ds}','${lift.id}',${i})" title="Remove set">✕</button></td>
+  </tr>`;
+}
+function renderSetRows(ds, lift, isCircuit, isDist){
+  return (lift.sets||[]).map((s,i)=>renderSingleSetRow(ds, lift, i, isCircuit, isDist)).join('');
+}
+async function refreshSetsTable(ds, liftId){
+  const d = getDC(ds); const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
+  const isCircuit = l.kind==='circuit';
+  const ex = await getExercises();
+  const isDist = !isCircuit && exerciseType(l.exercise, ex)==='distance';
+  const tbody = document.getElementById('sets-body-'+liftId);
+  if(tbody) tbody.innerHTML = renderSetRows(ds, l, isCircuit, isDist);
+  refreshAutofillBar(ds, liftId);
+}
+
 function renderLiftCard(ds, lift, ex, circuits){
   const optedClass = lift.optOut ? 'opted' : '';
   const isCircuit = lift.kind === 'circuit';
+  const isDist = !isCircuit && exerciseType(lift.exercise, ex)==='distance';
 
   let bodyHtml = '';
-  if(isCircuit){
-    const rowsHtml = (lift.sets||[]).map((s,i)=>`
-      <tr>
-        <td>${i+1}</td>
-        <td><input type="number" min="0" value="${s.rounds ?? ''}" placeholder="times"
-              onchange="dvSetField('${ds}','${lift.id}',${i},'rounds',this.value)"></td>
-        <td style="text-align:center"><input type="checkbox" class="chk done" ${s.completed?'checked':''}
-              onchange="dvToggleSetBool('${ds}','${lift.id}',${i},'completed')" title="Completed"></td>
-        <td><button class="row-del" onclick="dvRemoveSet('${ds}','${lift.id}',${i})" title="Remove">✕</button></td>
-      </tr>
-    `).join('');
-    bodyHtml = lift.optOut ? '' : `
+  if(!lift.optOut && isCircuit){
+    bodyHtml = `
       <textarea class="reason-box" placeholder="Circuit description, e.g. 20m A-skip, 20m B-skip, 20m sprint @ 90%"
-        onchange="dvSetCircuitDesc('${ds}','${lift.id}', this.value)">${esc(lift.description||'')}</textarea>
+        oninput="dvSetCircuitDesc('${ds}','${lift.id}', this.value)">${esc(lift.description||'')}</textarea>
       <table class="sets">
         <thead><tr><th>#</th><th>Times Completed</th><th>Done</th><th></th></tr></thead>
-        <tbody>${rowsHtml}</tbody>
+        <tbody id="sets-body-${lift.id}">${renderSetRows(ds, lift, true, false)}</tbody>
       </table>
+      ${renderAutofillBar(ds, lift.id, lift.sets, true)}
       <button class="btn ghost small add-set-btn" onclick="dvAddSet('${ds}','${lift.id}')">+ Log Attempt</button>
     `;
-  } else {
-    const type = exerciseType(lift.exercise, ex);
-    const isDist = type==='distance';
-    const rowsHtml = (lift.sets||[]).map((s,i)=>`
-      <tr>
-        <td>${i+1}</td>
-        <td><input type="number" min="0" value="${s.reps ?? ''}" placeholder="reps"
-              onchange="dvSetField('${ds}','${lift.id}',${i},'reps',this.value)"></td>
-        <td><input type="number" min="0" step="${isDist?1:2.5}" value="${s.amount ?? ''}" placeholder="${isDist?'metres':'lbs'}"
-              onchange="dvSetField('${ds}','${lift.id}',${i},'amount',this.value)"></td>
-        <td style="text-align:center"><input type="checkbox" class="chk done" ${s.completed?'checked':''}
-              onchange="dvToggleSetBool('${ds}','${lift.id}',${i},'completed')" title="Completed"></td>
-        <td style="text-align:center"><input type="checkbox" class="chk pr" ${s.pr?'checked':''}
-              onchange="dvToggleSetBool('${ds}','${lift.id}',${i},'pr')" title="PR"></td>
-        <td><button class="row-del" onclick="dvRemoveSet('${ds}','${lift.id}',${i})" title="Remove set">✕</button></td>
-      </tr>
-    `).join('');
-    bodyHtml = lift.optOut ? '' : `
+  } else if(!lift.optOut){
+    bodyHtml = `
       <table class="sets">
         <thead><tr><th>#</th><th>Reps</th><th>${isDist?'Metres':'Weight'}</th><th>Done</th><th>PR</th><th></th></tr></thead>
-        <tbody>${rowsHtml}</tbody>
+        <tbody id="sets-body-${lift.id}">${renderSetRows(ds, lift, false, isDist)}</tbody>
       </table>
+      ${renderAutofillBar(ds, lift.id, lift.sets, false)}
       <button class="btn ghost small add-set-btn" onclick="dvAddSet('${ds}','${lift.id}')">+ Add Set</button>
     `;
   }
 
   const reasonBox = lift.optOut ? `
     <textarea class="reason-box" placeholder="Why are you opting out of this lift?"
-      onchange="dvSetReason('${ds}','${lift.id}', this.value)">${esc(lift.reason)}</textarea>
+      oninput="dvSetReason('${ds}','${lift.id}', this.value)">${esc(lift.reason)}</textarea>
   ` : '';
 
   const notesBox = `
     <textarea class="reason-box notes-box" placeholder="Notes (optional) — how it felt, cues, anything worth remembering…"
-      onchange="dvSetNotes('${ds}','${lift.id}', this.value)">${esc(lift.notes||'')}</textarea>
+      oninput="dvSetNotes('${ds}','${lift.id}', this.value)">${esc(lift.notes||'')}</textarea>
   `;
 
   const selectorHtml = isCircuit ? `
@@ -674,7 +882,7 @@ function renderLiftCard(ds, lift, ex, circuits){
   `;
 
   return `
-    <div class="lift-card ${optedClass} ${isCircuit?'circuit':''}">
+    <div class="lift-card ${optedClass} ${isCircuit?'circuit':''}" id="lift-${lift.id}">
       <div class="lift-head">
         ${isCircuit ? '<span class="kind-badge">Circuit</span>' : ''}
         ${selectorHtml}
@@ -694,7 +902,17 @@ function renderLiftCard(ds, lift, ex, circuits){
   `;
 }
 
-/* day view mutation handlers */
+async function refreshLiftCard(ds, liftId){
+  const ex = await getExercises();
+  const circuits = await getCircuits();
+  const d = getDC(ds); const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
+  const el = document.getElementById('lift-'+liftId);
+  if(el) el.outerHTML = renderLiftCard(ds, l, ex, circuits);
+}
+
+/* day view mutation handlers — these patch just the affected DOM node(s),
+   they never call the full render(), so the rest of the page (scroll
+   position, other cards, focus) stays exactly where it was. */
 function dvChangeDate(delta){ App.date = addDays(App.date, delta); render(); }
 function dvGoToday(){ App.date = today0(); render(); }
 function dvViewWeek(){ App.weekStart = mondayOf(App.date); App.view='week'; render(); }
@@ -702,37 +920,50 @@ function dvViewMonth(){ App.monthCursor = { y:App.date.getFullYear(), m:App.date
 
 async function dvAddLift(ds){
   const ex = await getExercises();
-  const d = await getDay(ds);
-  d.lifts.push({ id: uid(), kind:'exercise', exercise: ex[0]?.name || '', optOut:false, reason:'', sets:[] });
-  await saveDay(ds, d);
-  render();
+  const circuits = await getCircuits();
+  const d = getDC(ds);
+  const newLift = { id: uid(), kind:'exercise', exercise: ex[0]?.name || '', optOut:false, reason:'', notes:'', sets:[] };
+  const wasEmpty = d.lifts.length===0;
+  d.lifts.push(newLift);
+  saveNow(ds);
+  const list = document.getElementById('lifts-list');
+  if(list){
+    if(wasEmpty) list.innerHTML = '';
+    list.insertAdjacentHTML('beforeend', renderLiftCard(ds, newLift, ex, circuits));
+  }
 }
 async function dvAddCircuitLift(ds){
   const circuits = await getCircuits();
-  const d = await getDay(ds);
+  const ex = await getExercises();
+  const d = getDC(ds);
   const first = circuits[0];
-  d.lifts.push({ id: uid(), kind:'circuit', exercise: first?first.name:'', description: first?first.description:'', optOut:false, reason:'', sets:[] });
-  await saveDay(ds, d);
-  render();
+  const newLift = { id: uid(), kind:'circuit', exercise: first?first.name:'', description: first?first.description:'', optOut:false, reason:'', notes:'', sets:[] };
+  const wasEmpty = d.lifts.length===0;
+  d.lifts.push(newLift);
+  saveNow(ds);
+  const list = document.getElementById('lifts-list');
+  if(list){
+    if(wasEmpty) list.innerHTML = '';
+    list.insertAdjacentHTML('beforeend', renderLiftCard(ds, newLift, ex, circuits));
+  }
 }
-async function dvRemoveLift(ds, liftId){
-  const d = await getDay(ds);
+function dvRemoveLift(ds, liftId){
+  const d = getDC(ds);
   d.lifts = d.lifts.filter(l=>l.id!==liftId);
-  await saveDay(ds, d);
-  let prlog = await getPrLog();
-  prlog = prlog.filter(p=>p.liftId!==liftId);
-  await savePrLog(prlog);
-  render();
+  saveNow(ds);
+  const el = document.getElementById('lift-'+liftId);
+  if(el) el.remove();
+  if(d.lifts.length===0){
+    const list = document.getElementById('lifts-list');
+    if(list) list.innerHTML = `<div class="empty-note">Nothing logged yet. Add an exercise or circuit to get started.</div>`;
+  }
 }
 async function dvSetExercise(ds, liftId, value){
-  const d = await getDay(ds);
+  const d = getDC(ds);
   const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
   l.exercise = value;
-  await saveDay(ds, d);
-  let prlog = await getPrLog(); let changed=false;
-  prlog.forEach(p=>{ if(p.liftId===liftId){ p.exercise=value; changed=true; } });
-  if(changed) await savePrLog(prlog);
-  render();
+  saveNow(ds);
+  await refreshLiftCard(ds, liftId);
 }
 async function dvAddCustomExercise(ds, liftId){
   const inp = document.getElementById('newex-'+liftId);
@@ -743,14 +974,14 @@ async function dvAddCustomExercise(ds, liftId){
   await dvSetExercise(ds, liftId, val);
 }
 async function dvSetCircuit(ds, liftId, value){
-  const d = await getDay(ds);
+  const d = getDC(ds);
   const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
   const circuits = await getCircuits();
   const c = circuits.find(x=>x.name===value);
   l.exercise = value;
   if(c) l.description = c.description;
-  await saveDay(ds, d);
-  render();
+  saveNow(ds);
+  await refreshLiftCard(ds, liftId);
 }
 async function dvAddCustomCircuit(ds, liftId){
   const inp = document.getElementById('newcirc-'+liftId);
@@ -760,61 +991,81 @@ async function dvAddCustomCircuit(ds, liftId){
   if(!circuits.find(c=>c.name===val)){ circuits.push({name:val, description:''}); await saveCircuits(circuits); }
   await dvSetCircuit(ds, liftId, val);
 }
-async function dvSetCircuitDesc(ds, liftId, value){
-  const d = await getDay(ds);
+function dvSetCircuitDesc(ds, liftId, value){
+  const d = getDC(ds);
   const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
   l.description = value;
-  const circuits = await getCircuits();
-  const c = circuits.find(x=>x.name===l.exercise);
-  if(c){ c.description = value; await saveCircuits(circuits); }
-  await saveDay(ds, d);
+  queueSave(ds);
+  debounce('circuit-'+liftId, async ()=>{
+    const circuits = await getCircuits();
+    const c = circuits.find(x=>x.name===l.exercise);
+    if(c){ c.description = value; await saveCircuits(circuits); }
+  }, 600);
 }
 async function dvToggleOptOut(ds, liftId){
-  const d = await getDay(ds);
+  const d = getDC(ds);
   const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
   l.optOut = !l.optOut;
-  await saveDay(ds, d);
-  render();
+  saveNow(ds);
+  await refreshLiftCard(ds, liftId);
 }
-async function dvSetReason(ds, liftId, value){
-  const d = await getDay(ds);
+function dvSetReason(ds, liftId, value){
+  const d = getDC(ds);
   const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
   l.reason = value;
-  await saveDay(ds, d);
+  queueSave(ds);
 }
-async function dvSetNotes(ds, liftId, value){
-  const d = await getDay(ds);
+function dvSetNotes(ds, liftId, value){
+  const d = getDC(ds);
   const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
   l.notes = value;
-  await saveDay(ds, d);
+  queueSave(ds);
 }
 async function dvAddSet(ds, liftId){
-  const d = await getDay(ds);
+  const d = getDC(ds);
   const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
-  if(l.kind==='circuit') l.sets.push({ rounds:'', completed:false });
-  else l.sets.push({ reps:'', amount:'', completed:false, pr:false });
-  await saveDay(ds, d);
-  render();
+  const isCircuit = l.kind==='circuit';
+  const prev = l.sets[l.sets.length-1];
+  let newSet;
+  if(isCircuit){
+    newSet = { rounds: (prev && prev.rounds!=='' && prev.rounds!=null) ? prev.rounds : '', completed:false };
+  } else {
+    newSet = {
+      reps: (prev && prev.reps!=='' && prev.reps!=null) ? prev.reps : '',
+      amount: (prev && prev.amount!=='' && prev.amount!=null) ? prev.amount : '',
+      completed:false, pr:false
+    };
+  }
+  l.sets.push(newSet);
+  saveNow(ds);
+  const ex = await getExercises();
+  const isDist = !isCircuit && exerciseType(l.exercise, ex)==='distance';
+  const tbody = document.getElementById('sets-body-'+liftId);
+  if(tbody){
+    const idx = l.sets.length-1;
+    tbody.insertAdjacentHTML('beforeend', renderSingleSetRow(ds, l, idx, isCircuit, isDist));
+  }
+  refreshAutofillBar(ds, liftId);
 }
 async function dvRemoveSet(ds, liftId, idx){
-  const d = await getDay(ds);
+  const d = getDC(ds);
   const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
   l.sets.splice(idx,1);
-  await saveDay(ds, d);
-  render();
+  saveNow(ds);
+  await refreshSetsTable(ds, liftId);
 }
-async function dvSetField(ds, liftId, idx, field, value){
-  const d = await getDay(ds);
+function dvSetField(ds, liftId, idx, field, value){
+  const d = getDC(ds);
   const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
   l.sets[idx][field] = value===''? '' : Number(value);
-  await saveDay(ds, d);
+  queueSave(ds);
+  refreshAutofillBar(ds, liftId);
 }
-async function dvToggleSetBool(ds, liftId, idx, field){
-  const d = await getDay(ds);
+function dvToggleSetBool(ds, liftId, idx, field){
+  const d = getDC(ds);
   const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
   l.sets[idx][field] = !l.sets[idx][field];
-  await saveDay(ds, d);
-  render();
+  saveNow(ds);
 }
 
 /* ================= WEEK VIEW ================= */
@@ -1147,6 +1398,274 @@ async function exSetType(encodedName, type){
   const e = ex.find(x=>x.name===name);
   if(e){ e.type = type; await saveExercises(ex); }
   render();
+}
+
+/* ================= PROFILE / SHAREABLE CARD ================= */
+async function getProfile(){
+  if(App.profile) return App.profile;
+  let p = await getItem('profile');
+  if(!p) p = { username:'', bio:'', avatar:'', topLifts:['','',''] };
+  if(!p.topLifts) p.topLifts = ['','',''];
+  App.profile = p;
+  return p;
+}
+async function saveProfile(p){ App.profile = p; await setItem('profile', p); }
+
+function resizeImageFile(file, maxSize){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      const img = new Image();
+      img.onload = ()=>{
+        let { width, height } = img;
+        if(width>height){ if(width>maxSize){ height*=maxSize/width; width=maxSize; } }
+        else { if(height>maxSize){ width*=maxSize/height; height=maxSize; } }
+        const canvas = document.createElement('canvas');
+        canvas.width=Math.round(width); canvas.height=Math.round(height);
+        canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+        resolve(canvas.toDataURL('image/jpeg',0.85));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function getBestForExercise(name){
+  if(!name) return null;
+  const { points } = await getProgressData(name);
+  if(points.length===0) return null;
+  let best = points[0];
+  points.forEach(p=>{ if((p.amount||0) > (best.amount||0)) best = p; });
+  return best;
+}
+
+async function renderProfileView(){
+  const profile = await getProfile();
+  const ex = await getExercises();
+  const names = ex.map(e=>e.name);
+
+  const liftPickers = [0,1,2].map(i => `
+    <select onchange="pfSetTopLift(${i}, this.value)">
+      <option value="">— none —</option>
+      ${names.map(n=>`<option value="${esc(n)}" ${n===profile.topLifts[i]?'selected':''}>${esc(n)}</option>`).join('')}
+    </select>
+  `).join('');
+
+  return `
+    <h3 style="margin-bottom:14px;">Your Profile Card</h3>
+    <div class="profile-form">
+      <div>
+        <label>Photo</label>
+        <div class="avatar-row">
+          <img class="avatar-preview" id="avatar-preview" src="${profile.avatar || ''}" style="${profile.avatar?'':'visibility:hidden'}">
+          <input type="file" accept="image/*" onchange="pfAvatarChange(this)">
+        </div>
+      </div>
+      <div>
+        <label>Username</label>
+        <input type="text" value="${esc(profile.username)}" placeholder="e.g. jhk" oninput="pfSetField('username', this.value)">
+      </div>
+      <div>
+        <label>Description</label>
+        <textarea class="reason-box" placeholder="A quick line about your training…" oninput="pfSetField('bio', this.value)">${esc(profile.bio)}</textarea>
+      </div>
+      <div>
+        <label>Top 3 Lifts</label>
+        <div class="toplift-row">${liftPickers}</div>
+      </div>
+    </div>
+    <div class="card-stage">
+      <div id="gcard-holder">${await renderGCard(profile)}</div>
+      <button class="btn" onclick="pfDownloadCard()">⬇ Download Shareable Card</button>
+    </div>
+  `;
+}
+
+function pfSetField(field, value){
+  App.profile[field] = value;
+  debounce('profile', ()=>saveProfile(App.profile), 500);
+  refreshGCard();
+}
+function pfSetTopLift(i, value){
+  App.profile.topLifts[i] = value;
+  saveProfile(App.profile);
+  refreshGCard();
+}
+async function pfAvatarChange(input){
+  const file = input.files[0];
+  if(!file) return;
+  const dataUrl = await resizeImageFile(file, 300);
+  App.profile.avatar = dataUrl;
+  await saveProfile(App.profile);
+  const img = document.getElementById('avatar-preview');
+  if(img){ img.src = dataUrl; img.style.visibility='visible'; }
+  refreshGCard();
+}
+async function refreshGCard(){
+  const holder = document.getElementById('gcard-holder');
+  if(holder) holder.innerHTML = await renderGCard(App.profile);
+}
+
+async function renderGCard(profile){
+  const rows = [];
+  for(let i=0;i<3;i++){
+    const name = profile.topLifts[i];
+    if(!name) continue;
+    const best = await getBestForExercise(name);
+    const unit = exerciseType(name)==='distance' ? 'm' : 'lbs';
+    const valLabel = best ? `${best.amount}${unit}` : '—';
+    rows.push(`
+      <div class="gcard-stat">
+        <span class="rank">${i+1}</span>
+        <span class="exname">${esc(name)}</span>
+        <span class="exval">${valLabel}</span>
+      </div>
+    `);
+  }
+  const initials = (profile.username||'?').trim().slice(0,1).toUpperCase();
+  return `
+    <div class="gcard" id="gcard">
+      <div class="gcard-inner">
+        <div class="gcard-corner tl"></div><div class="gcard-corner tr"></div>
+        <div class="gcard-corner bl"></div><div class="gcard-corner br"></div>
+        <div class="gcard-head">
+          ${profile.avatar
+            ? `<img class="gcard-avatar" src="${profile.avatar}">`
+            : `<div class="gcard-avatar">${esc(initials)}</div>`}
+          <div>
+            <div class="gcard-tag">Training Log</div>
+            <div class="gcard-name">${esc(profile.username || 'Athlete')}</div>
+          </div>
+        </div>
+        <div class="gcard-bio">${esc(profile.bio || 'No description yet.')}</div>
+        <div class="gcard-stats">${rows.join('') || '<div class="exlist" style="color:rgba(255,255,255,0.85)">Pick your top 3 lifts to show them here.</div>'}</div>
+        <div class="gcard-foot">Mngo · Loadout Card</div>
+      </div>
+    </div>
+  `;
+}
+
+/* ---- canvas export so the card can be saved/shared as an image ---- */
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+function loadImageEl(src){
+  return new Promise((resolve,reject)=>{
+    const img = new Image();
+    img.onload=()=>resolve(img);
+    img.onerror=reject;
+    img.src=src;
+  });
+}
+function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines){
+  const words = String(text).split(' ');
+  let line = '', curY = y, drawn = 0;
+  for(let n=0;n<words.length;n++){
+    const testLine = line + words[n] + ' ';
+    if(ctx.measureText(testLine).width > maxWidth && line !== ''){
+      if(drawn>=maxLines-1){ ctx.fillText(line.trim()+'…', x, curY); return; }
+      ctx.fillText(line, x, curY);
+      line = words[n] + ' ';
+      curY += lineHeight;
+      drawn++;
+    } else {
+      line = testLine;
+    }
+  }
+  ctx.fillText(line, x, curY);
+}
+async function pfDownloadCard(){
+  if(document.fonts && document.fonts.ready) await document.fonts.ready;
+  const profile = App.profile;
+  const W=680, H=880;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  const grad = ctx.createLinearGradient(0,0,W,H);
+  grad.addColorStop(0,'#FFC845'); grad.addColorStop(0.46,'#FF8A3D'); grad.addColorStop(1,'#E8492A');
+  roundRect(ctx,0,0,W,H,44); ctx.fillStyle=grad; ctx.fill();
+
+  ctx.save();
+  roundRect(ctx,10,10,W-20,H-20,38); ctx.clip();
+  const grad2 = ctx.createLinearGradient(0,0,0,H);
+  grad2.addColorStop(0,'rgba(255,255,255,0.08)'); grad2.addColorStop(1,'rgba(0,0,0,0.14)');
+  ctx.fillStyle=grad2; ctx.fillRect(10,10,W-20,H-20);
+  ctx.restore();
+
+  ctx.strokeStyle='rgba(255,255,255,0.85)'; ctx.lineWidth=4;
+  const c=52;
+  ctx.beginPath(); ctx.moveTo(30,30+c); ctx.lineTo(30,30); ctx.lineTo(30+c,30); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W-30-c,30); ctx.lineTo(W-30,30); ctx.lineTo(W-30,30+c); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(30,H-30-c); ctx.lineTo(30,H-30); ctx.lineTo(30+c,H-30); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W-30-c,H-30); ctx.lineTo(W-30,H-30); ctx.lineTo(W-30,H-30-c); ctx.stroke();
+
+  const avR=70, avX=110, avY=118;
+  ctx.save();
+  ctx.beginPath(); ctx.arc(avX,avY,avR,0,Math.PI*2); ctx.closePath(); ctx.clip();
+  if(profile.avatar){
+    try{
+      const img = await loadImageEl(profile.avatar);
+      ctx.drawImage(img, avX-avR, avY-avR, avR*2, avR*2);
+    }catch(e){ ctx.fillStyle='rgba(255,255,255,0.25)'; ctx.fillRect(avX-avR,avY-avR,avR*2,avR*2); }
+  } else {
+    ctx.fillStyle='rgba(255,255,255,0.25)'; ctx.fillRect(avX-avR,avY-avR,avR*2,avR*2);
+    ctx.fillStyle='#fff'; ctx.font='700 48px "Barlow Condensed", sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText((profile.username||'?').slice(0,1).toUpperCase(), avX, avY+4);
+  }
+  ctx.restore();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=5; ctx.beginPath(); ctx.arc(avX,avY,avR,0,Math.PI*2); ctx.stroke();
+
+  ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+  ctx.fillStyle='rgba(255,255,255,0.85)'; ctx.font='600 15px Inter, sans-serif';
+  ctx.fillText('TRAINING LOG', avX+avR+24, avY-16);
+  ctx.fillStyle='#fff'; ctx.font='800 40px "Barlow Condensed", sans-serif';
+  ctx.fillText((profile.username||'Athlete').toUpperCase(), avX+avR+24, avY+22);
+
+  const bioY = 220;
+  ctx.fillStyle='rgba(0,0,0,0.16)';
+  roundRect(ctx, 60, bioY, W-120, 96, 16); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.font='400 18px Inter, sans-serif';
+  wrapText(ctx, profile.bio || 'No description yet.', 78, bioY+34, W-156, 24, 3);
+
+  let statY = bioY + 130;
+  for(let i=0;i<3;i++){
+    const name = profile.topLifts[i];
+    if(!name) continue;
+    const best = await getBestForExercise(name);
+    const unit = exerciseType(name)==='distance' ? 'm' : 'lbs';
+    const valLabel = best ? `${best.amount}${unit}` : '—';
+    ctx.fillStyle='rgba(255,255,255,0.16)';
+    roundRect(ctx, 60, statY, W-120, 64, 14); ctx.fill();
+    ctx.fillStyle='#2B2318';
+    ctx.beginPath(); ctx.arc(96, statY+32, 18, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle='#FFC845'; ctx.font='800 20px "Barlow Condensed", sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(String(i+1), 96, statY+33);
+    ctx.textAlign='left';
+    ctx.fillStyle='#fff'; ctx.font='700 19px Inter, sans-serif';
+    ctx.fillText(name, 128, statY+38);
+    ctx.textAlign='right'; ctx.font='800 24px "Barlow Condensed", sans-serif';
+    ctx.fillText(valLabel, W-80, statY+40);
+    ctx.textAlign='left';
+    statY += 78;
+  }
+
+  ctx.textAlign='center'; ctx.fillStyle='rgba(255,255,255,0.75)'; ctx.font='600 13px Inter, sans-serif';
+  ctx.fillText('MNGO · LOADOUT CARD', W/2, H-40);
+
+  const a = document.createElement('a');
+  a.download = (profile.username ? profile.username.replace(/[^a-z0-9]/gi,'_') : 'training') + '-card.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
 }
 
 /* ================= EXPORT VIEW ================= */
