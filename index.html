@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loadout — Training Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- ===================================================================
+     FIREBASE (compat build — keeps this a plain script, no bundler needed)
+     Fill in YOUR_CONFIG below with your own Firebase project's settings.
+     See README.md in this repo for full step-by-step setup instructions.
+     Until you fill this in, the app runs fine in local-only mode (data
+     stays in this browser only, via localStorage).
+=================================================================== -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<style>
+  :root{
+    --mango:#FF8A3D;
+    --mango-deep:#F5701A;
+    --yellow:#FFC845;
+    --tomato:#E8492A;
+    --leaf:#3FA968;
+    --leaf-deep:#2F8A54;
+    --ink:#2B2318;
+    --ink-soft:#6B5F4F;
+    --paper:#FFF9F0;
+    --card:#FFFFFF;
+    --line:#EFE3D0;
+    --shadow: 0 2px 10px rgba(43,35,24,0.06), 0 1px 2px rgba(43,35,24,0.05);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Barlow Condensed',sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.02em;
+    font-weight:800;
+    margin:0;
+  }
+  #app{max-width:960px;margin:0 auto;padding:0 0 60px;}
+
+  /* NAV */
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 20px 14px;
+    flex-wrap:wrap;
+    gap:10px;
+    border-bottom:2px solid var(--line);
+    background:var(--paper);
+    position:sticky;
+    top:0;
+    z-index:10;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:800;
+    font-size:26px;
+    letter-spacing:0.03em;
+    color:var(--ink);
+  }
+  .barbell{display:flex;align-items:center;gap:2px;}
+  .plate{width:11px;height:11px;border-radius:50%;background:var(--mango);}
+  .plate.y{background:var(--yellow);}
+  .plate.g{background:var(--leaf);}
+  .bar{width:26px;height:4px;background:var(--ink);border-radius:2px;}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;}
+  .tab{
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    padding:8px 14px;
+    border-radius:999px;
+    border:2px solid transparent;
+    background:transparent;
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .tab.active{background:var(--ink);color:var(--paper);}
+  .tab:hover:not(.active){border-color:var(--line);color:var(--ink);}
+
+  .main{padding:22px 20px 10px;}
+
+  /* Buttons */
+  button{font-family:inherit;cursor:pointer;}
+  .btn{
+    border:none;
+    border-radius:999px;
+    padding:9px 16px;
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    background:var(--mango);
+    color:#fff;
+  }
+  .btn:hover{background:var(--mango-deep);}
+  .btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line);}
+  .btn.ghost:hover{border-color:var(--mango);color:var(--mango-deep);}
+  .btn.small{padding:5px 11px;font-size:13px;}
+  .btn.danger{background:var(--tomato);}
+  .btn.danger:hover{background:#c73a1e;}
+  .icon-btn{
+    border:none;background:transparent;color:var(--ink-soft);font-size:18px;
+    width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  }
+  .icon-btn:hover{background:var(--line);color:var(--ink);}
+
+  /* Auth box */
+  .auth-box{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .sync-badge{
+    font-family:'Barlow Condensed';font-weight:700;font-size:12.5px;letter-spacing:0.03em;text-transform:uppercase;
+    padding:6px 12px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;
+  }
+  .sync-badge.local{background:var(--line);color:var(--ink-soft);}
+  .sync-badge.cloud{background:var(--leaf);color:#fff;}
+  .sync-badge.syncing{background:var(--yellow);color:var(--ink);}
+
+  /* Day view */
+  .day-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px;}
+  .day-title{font-size:30px;}
+  .day-sub{font-family:'Inter';font-size:13px;color:var(--ink-soft);font-weight:500;}
+  .day-nav{display:flex;align-items:center;gap:4px;}
+  .view-links{display:flex;gap:8px;}
+
+  .lift-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px 18px;
+    margin-bottom:14px;
+    box-shadow:var(--shadow);
+  }
+  .lift-card.opted{border-left:5px solid var(--tomato);}
+  .lift-card.circuit{border-left:5px solid var(--leaf);}
+  .lift-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+  .kind-badge{
+    font-family:'Barlow Condensed';font-weight:700;font-size:11.5px;letter-spacing:0.05em;
+    background:var(--leaf);color:#fff;padding:4px 9px;border-radius:999px;
+  }
+  select, input[type=text], input[type=number], textarea{
+    font-family:'Inter';
+    border:1.5px solid var(--line);
+    border-radius:9px;
+    padding:7px 10px;
+    font-size:14px;
+    color:var(--ink);
+    background:#fff;
+  }
+  select:focus, input:focus, textarea:focus{outline:2px solid var(--mango);outline-offset:1px;}
+  .exercise-select{font-weight:600;font-size:16px;min-width:190px;}
+  .newex-row{display:flex;gap:6px;align-items:center;}
+  .newex-row input{width:140px;}
+
+  .optout-toggle{display:flex;align-items:center;gap:6px;margin-left:auto;font-size:13px;color:var(--ink-soft);font-weight:600;}
+  .reason-box{width:100%;min-height:54px;resize:vertical;margin-top:8px;font-size:14px;}
+
+  table.sets{width:100%;border-collapse:collapse;margin-top:8px;}
+  table.sets th{
+    font-family:'Barlow Condensed';font-size:13px;letter-spacing:0.04em;text-transform:uppercase;
+    color:var(--ink-soft);text-align:left;padding:4px 6px;border-bottom:1.5px solid var(--line);
+  }
+  table.sets td{padding:5px 6px;vertical-align:middle;}
+  table.sets input[type=number]{width:64px;}
+
+  /* custom checkboxes */
+  .chk{
+    appearance:none;-webkit-appearance:none;
+    width:26px;height:26px;border-radius:50%;
+    border:2.5px solid var(--line);
+    cursor:pointer;position:relative;background:#fff;
+  }
+  .chk.done:checked{background:var(--leaf);border-color:var(--leaf-deep);}
+  .chk.done:checked::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;}
+  .chk.pr{border-radius:6px;}
+  .chk.pr:checked{background:var(--yellow);border-color:#D9A424;}
+  .chk.pr:checked::after{content:'★';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;}
+  .chk.opt:checked{background:var(--tomato);border-color:#B93A20;}
+  .chk.opt:checked::after{content:'×';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;font-weight:800;}
+
+  .row-del{background:none;border:none;color:var(--ink-soft);font-size:16px;cursor:pointer;}
+  .row-del:hover{color:var(--tomato);}
+  .add-set-btn{margin-top:8px;}
+  .lift-actions{display:flex;justify-content:space-between;align-items:center;margin-top:10px;}
+  .empty-note{color:var(--ink-soft);font-size:14px;padding:30px 0;text-align:center;}
+
+  /* Week view */
+  .week-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:8px;}
+  .day-card{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;cursor:pointer;
+    box-shadow:var(--shadow);min-height:120px;display:flex;flex-direction:column;gap:6px;
+  }
+  .day-card:hover{border-color:var(--mango);}
+  .day-card.today{outline:2.5px solid var(--mango);}
+  .day-card .dname{font-family:'Barlow Condensed';font-weight:700;font-size:15px;color:var(--ink-soft);text-transform:uppercase;}
+  .day-card .dnum{font-family:'Barlow Condensed';font-weight:800;font-size:24px;}
+  .status-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;}
+  .dot-none{background:var(--line);}
+  .dot-done{background:var(--leaf);}
+  .dot-partial{background:var(--yellow);}
+  .dot-logged{background:var(--mango);}
+  .dot-optout{background:var(--tomato);}
+  .exlist{font-size:12px;color:var(--ink-soft);line-height:1.4;}
+
+  /* Month view */
+  .month-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .weekday-row{display:grid;grid-template-columns:44px repeat(7,1fr);gap:6px;font-family:'Barlow Condensed';font-size:13px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.04em;padding:0 2px;margin-bottom:4px;}
+  .week-row{display:grid;grid-template-columns:44px repeat(7,1fr);gap:6px;margin-bottom:6px;align-items:stretch;}
+  .week-btn{
+    background:var(--ink);color:var(--paper);border:none;border-radius:10px;font-family:'Barlow Condensed';
+    font-weight:700;font-size:12px;writing-mode:vertical-rl;text-orientation:mixed;cursor:pointer;padding:6px 0;
+  }
+  .week-btn:hover{background:var(--mango-deep);}
+  .month-cell{
+    background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 6px;min-height:64px;cursor:pointer;
+    display:flex;flex-direction:column;gap:6px;
+  }
+  .month-cell:hover{border-color:var(--mango);}
+  .month-cell.outside{opacity:0.35;}
+  .month-cell.today{outline:2.5px solid var(--mango);}
+  .mnum{font-family:'Barlow Condensed';font-weight:700;font-size:16px;}
+
+  /* PR view */
+  .pr-controls{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+  .pr-table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);}
+  .pr-table th{background:var(--ink);color:var(--paper);font-family:'Barlow Condensed';font-weight:700;text-transform:uppercase;font-size:13px;padding:8px 12px;text-align:left;}
+  .pr-table td{padding:8px 12px;border-bottom:1px solid var(--line);font-size:14px;}
+  .pr-table tr:last-child td{border-bottom:none;}
+  .best-badge{background:var(--yellow);color:var(--ink);font-weight:700;font-size:11px;padding:2px 8px;border-radius:999px;margin-left:6px;}
+  .chart-wrap{background:var(--card);border-radius:14px;padding:16px;box-shadow:var(--shadow);margin-bottom:18px;}
+
+  /* Exercises view */
+  .chip-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+  .chip{
+    background:var(--card);border:1.5px solid var(--line);border-radius:999px;padding:7px 8px 7px 14px;
+    display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;
+  }
+  .chip button{background:none;border:none;color:var(--ink-soft);font-size:15px;}
+  .chip button:hover{color:var(--tomato);}
+  .type-mini{font-size:12px;padding:4px 6px;border-radius:999px;}
+  .add-ex-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .add-ex-row input{flex:1;max-width:280px;}
+
+  /* Circuits view */
+  .circuit-list{display:flex;flex-direction:column;gap:12px;margin-bottom:20px;}
+  .circuit-tpl{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);}
+  .circuit-tpl-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .circuit-tpl-head strong{font-family:'Barlow Condensed';font-size:17px;letter-spacing:0.02em;text-transform:uppercase;}
+
+  @media (max-width:640px){
+    .day-title{font-size:24px;}
+    .week-grid{grid-template-columns:repeat(2,1fr);}
+    .week-row{grid-template-columns:28px repeat(7,minmax(0,1fr));}
+    .weekday-row{grid-template-columns:28px repeat(7,1fr);}
+  }
+</style>
+</head>
+<body>
+<div id="app"><div class="main">Loading...</div></div>
+
+<script>
+/* ===================================================================
+   FIREBASE CONFIG — replace with your own project's settings.
+   Get these from: Firebase Console → Project Settings → General →
+   "Your apps" → Web app config. See README.md for the full walkthrough
+   (creating the project, turning on Google sign-in, creating Firestore,
+   and setting security rules).
+=================================================================== */
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+const CLOUD_ENABLED = firebaseConfig.apiKey !== "YOUR_API_KEY";
+
+let auth = null, db = null;
+if(CLOUD_ENABLED){
+  firebase.initializeApp(firebaseConfig);
+  auth = firebase.auth();
+  db = firebase.firestore();
+  db.enablePersistence({synchronizeTabs:true}).catch(()=>{ /* fine, e.g. multiple tabs or unsupported browser */ });
+}
+const Store = { uid:null, email:null, syncing:false };
+
+/* ---------- storage helpers (local always mirrors; cloud used when signed in) ---------- */
+function getLocalItem(key){
+  try{ const raw = localStorage.getItem('loadout:'+key); return raw ? JSON.parse(raw) : null; }
+  catch(e){ return null; }
+}
+function setLocalItem(key, val){
+  try{ localStorage.setItem('loadout:'+key, JSON.stringify(val)); }
+  catch(e){ console.error('local storage set failed', e); }
+}
+function listLocalKeys(prefix){
+  const out=[];
+  const p = 'loadout:'+prefix;
+  for(let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    if(k && k.startsWith(p)) out.push(k.slice('loadout:'.length));
+  }
+  return out;
+}
+function keyToRef(key){
+  if(key.startsWith('day:')){
+    const ds = key.slice(4);
+    return db.collection('users').doc(Store.uid).collection('days').doc(ds);
+  }
+  return db.collection('users').doc(Store.uid).collection('meta').doc(key);
+}
+async function getItem(key){
+  if(CLOUD_ENABLED && Store.uid){
+    try{
+      const snap = await keyToRef(key).get();
+      if(snap.exists){ const v = snap.data().value; setLocalItem(key, v); return v; }
+      return null;
+    }catch(e){ console.error('cloud read failed, using local cache', e); }
+  }
+  return getLocalItem(key);
+}
+async function setItem(key, val){
+  setLocalItem(key, val);
+  if(CLOUD_ENABLED && Store.uid){
+    try{ await keyToRef(key).set({ value: val, updatedAt: Date.now() }); }
+    catch(e){ console.error('cloud write failed (saved locally instead)', e); }
+  }
+}
+async function listKeys(prefix){
+  if(CLOUD_ENABLED && Store.uid && prefix==='day:'){
+    try{
+      const snap = await db.collection('users').doc(Store.uid).collection('days').get();
+      return snap.docs.map(d=>'day:'+d.id);
+    }catch(e){ console.error('cloud list failed, using local cache', e); }
+  }
+  return listLocalKeys(prefix);
+}
+
+/* ---------- auth ---------- */
+function signIn(){
+  if(!CLOUD_ENABLED){ alert('Cloud sync isn\'t configured yet. See README.md for setup steps — until then your data is saved locally in this browser.'); return; }
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).catch(e=>{ console.error(e); alert('Sign-in failed: '+e.message); });
+}
+function signOutUser(){ if(auth) auth.signOut(); }
+
+async function migrateLocalToCloudIfNeeded(){
+  try{
+    const cloudEx = await db.collection('users').doc(Store.uid).collection('meta').doc('exercises').get();
+    if(cloudEx.exists) return; // this account already has cloud data — never overwrite it
+    const localKeys = listLocalKeys('');
+    for(const k of localKeys){
+      const val = getLocalItem(k);
+      if(val!=null) await keyToRef(k).set({ value: val, updatedAt: Date.now() });
+    }
+  }catch(e){ console.error('migration to cloud failed', e); }
+}
+
+if(CLOUD_ENABLED){
+  auth.onAuthStateChanged(async user=>{
+    App.exercises = null; App.circuits = null;
+    if(user){
+      Store.uid = user.uid; Store.email = user.email;
+      Store.syncing = true; render();
+      await migrateLocalToCloudIfNeeded();
+      Store.syncing = false;
+    } else {
+      Store.uid = null; Store.email = null;
+    }
+    render();
+  });
+}
+
+/* ---------- date helpers ---------- */
+function dateStr(d){
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function parseDateStr(s){
+  const [y,m,d] = s.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
+function addDays(d, n){ const r = new Date(d); r.setDate(r.getDate()+n); return r; }
+function mondayOf(d){ const r=new Date(d); const day=(r.getDay()+6)%7; r.setDate(r.getDate()-day); return r; }
+function sameDate(a,b){ return dateStr(a)===dateStr(b); }
+const WEEKDAY_NAMES=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function esc(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function uid(){ return Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4); }
+
+/* ---------- defaults ---------- */
+const DEFAULT_EXERCISES = [
+  {name:'Back Squat', type:'weight'}, {name:'Front Squat', type:'weight'},
+  {name:'Power Clean', type:'weight'}, {name:'Hang Power Clean', type:'weight'},
+  {name:'Deadlift', type:'weight'}, {name:'Bench Press', type:'weight'},
+  {name:'Overhead Press', type:'weight'}, {name:'Weighted Pull-up', type:'weight'},
+  {name:'Nordic Curl', type:'weight'}, {name:'Box Jump', type:'weight'},
+  {name:'Depth Jump', type:'weight'},
+  {name:'Broad Jump', type:'distance'}, {name:'Vertical Jump Test', type:'distance'},
+  {name:'Sprint 20m', type:'distance'}
+];
+const DEFAULT_CIRCUITS = [
+  {name:'Bullet', description:'20m A-skip, 20m B-skip, 20m sprint @ 90%'}
+];
+
+/* ---------- app state ---------- */
+const App = { view:'day', date:new Date(), weekStart:null, monthCursor:null, exercises:null, circuits:null, prExercise:null };
+
+async function getDay(ds){ const v = await getItem('day:'+ds); return v || { lifts: [] }; }
+async function saveDay(ds, data){ await setItem('day:'+ds, data); }
+
+async function getExercises(){
+  if(App.exercises) return App.exercises;
+  let ex = await getItem('exercises');
+  if(!ex){ ex = DEFAULT_EXERCISES.slice(); await setItem('exercises', ex); }
+  else if(ex.length && typeof ex[0]==='string'){ ex = ex.map(name=>({name, type:'weight'})); await setItem('exercises', ex); }
+  App.exercises = ex;
+  return ex;
+}
+async function saveExercises(ex){ App.exercises = ex; await setItem('exercises', ex); }
+function exerciseType(name, exList){
+  const found = (exList||App.exercises||[]).find(e=>e.name===name);
+  return found ? found.type : 'weight';
+}
+
+async function getCircuits(){
+  if(App.circuits) return App.circuits;
+  let c = await getItem('circuits');
+  if(!c){ c = DEFAULT_CIRCUITS.slice(); await setItem('circuits', c); }
+  App.circuits = c;
+  return c;
+}
+async function saveCircuits(c){ App.circuits = c; await setItem('circuits', c); }
+
+async function getPrLog(){ const v = await getItem('prlog'); return v || []; }
+async function savePrLog(v){ await setItem('prlog', v); }
+
+/* ---------- init ---------- */
+async function init(){
+  const today = new Date(today0());
+  App.date = today;
+  App.weekStart = mondayOf(today);
+  App.monthCursor = { y: today.getFullYear(), m: today.getMonth() };
+  await getExercises();
+  await getCircuits();
+  render();
+}
+function today0(){ const d=new Date(); d.setHours(0,0,0,0); return d; }
+
+/* ---------- status helper for a day's data ---------- */
+function dayStatus(data){
+  if(!data || !data.lifts || data.lifts.length===0) return 'none';
+  let total=0, done=0, hasOpt=false;
+  data.lifts.forEach(l=>{
+    if(l.optOut){ hasOpt=true; return; }
+    (l.sets||[]).forEach(s=>{ total++; if(s.completed) done++; });
+  });
+  if(total===0) return hasOpt ? 'optout' : 'logged';
+  if(done===total) return 'done';
+  if(done>0) return 'partial';
+  return 'logged';
+}
+
+/* ---------- NAV ---------- */
+function renderAuthUI(){
+  if(!CLOUD_ENABLED){
+    return `<div class="auth-box"><span class="sync-badge local">Local only</span></div>`;
+  }
+  if(Store.syncing){
+    return `<div class="auth-box"><span class="sync-badge syncing">Syncing…</span></div>`;
+  }
+  if(Store.uid){
+    return `<div class="auth-box">
+      <span class="sync-badge cloud">☁ ${esc(Store.email)}</span>
+      <button class="btn ghost small" onclick="signOutUser()">Sign out</button>
+    </div>`;
+  }
+  return `<div class="auth-box"><button class="btn small" onclick="signIn()">Sign in with Google</button></div>`;
+}
+function renderNav(){
+  const tabs = [['day','Log'],['week','Week'],['month','Month'],['pr','PRs'],['exercises','Exercises'],['circuits','Circuits']];
+  return `<div class="nav">
+    <div class="brand">
+      <div class="barbell"><div class="plate g"></div><div class="plate y"></div><div class="bar"></div><div class="plate y"></div><div class="plate"></div></div>
+      Loadout
+    </div>
+    <div class="tabs">
+      ${tabs.map(([v,l])=>`<button class="tab ${App.view===v?'active':''}" onclick="setView('${v}')">${l}</button>`).join('')}
+    </div>
+    ${renderAuthUI()}
+  </div>`;
+}
+function setView(v){ App.view = v; render(); }
+
+/* ---------- MAIN RENDER ---------- */
+async function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = renderNav() + '<div class="main" id="main"><div class="empty-note">Loading…</div></div>';
+  let html = '';
+  if(App.view==='day') html = await renderDayView();
+  else if(App.view==='week') html = await renderWeekView();
+  else if(App.view==='month') html = await renderMonthView();
+  else if(App.view==='pr') html = await renderPRView();
+  else if(App.view==='exercises') html = await renderExercisesView();
+  else if(App.view==='circuits') html = await renderCircuitsView();
+  document.getElementById('main').innerHTML = html;
+}
+
+/* ================= DAY VIEW ================= */
+async function renderDayView(){
+  const ds = dateStr(App.date);
+  const data = await getDay(ds);
+  const ex = await getExercises();
+  const circuits = await getCircuits();
+  const isToday = sameDate(App.date, today0());
+  const label = App.date.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+
+  let liftsHtml = '';
+  if(data.lifts.length===0){
+    liftsHtml = `<div class="empty-note">Nothing logged yet. Add an exercise or circuit to get started.</div>`;
+  } else {
+    liftsHtml = data.lifts.map(l => renderLiftCard(ds, l, ex, circuits)).join('');
+  }
+
+  return `
+    <div class="day-header">
+      <div>
+        <div class="day-title display">${label}</div>
+        <div class="day-sub">${isToday ? "Today" : ''}</div>
+      </div>
+      <div class="day-nav">
+        <button class="icon-btn" onclick="dvChangeDate(-1)" title="Previous day">‹</button>
+        <button class="btn ghost small" onclick="dvGoToday()">Today</button>
+        <button class="icon-btn" onclick="dvChangeDate(1)" title="Next day">›</button>
+      </div>
+      <div class="view-links">
+        <button class="btn ghost small" onclick="dvViewWeek()">View Week</button>
+        <button class="btn ghost small" onclick="dvViewMonth()">View Month</button>
+      </div>
+    </div>
+    ${liftsHtml}
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn" onclick="dvAddLift('${ds}')">+ Add Exercise</button>
+      <button class="btn ghost" onclick="dvAddCircuitLift('${ds}')">+ Add Circuit</button>
+    </div>
+  `;
+}
+
+function renderLiftCard(ds, lift, ex, circuits){
+  const optedClass = lift.optOut ? 'opted' : '';
+  const isCircuit = lift.kind === 'circuit';
+
+  let bodyHtml = '';
+  if(isCircuit){
+    const rowsHtml = (lift.sets||[]).map((s,i)=>`
+      <tr>
+        <td>${i+1}</td>
+        <td><input type="number" min="0" value="${s.rounds ?? ''}" placeholder="times"
+              onchange="dvSetField('${ds}','${lift.id}',${i},'rounds',this.value)"></td>
+        <td style="text-align:center"><input type="checkbox" class="chk done" ${s.completed?'checked':''}
+              onchange="dvToggleSetBool('${ds}','${lift.id}',${i},'completed')" title="Completed"></td>
+        <td><button class="row-del" onclick="dvRemoveSet('${ds}','${lift.id}',${i})" title="Remove">✕</button></td>
+      </tr>
+    `).join('');
+    bodyHtml = lift.optOut ? '' : `
+      <textarea class="reason-box" placeholder="Circuit description, e.g. 20m A-skip, 20m B-skip, 20m sprint @ 90%"
+        onchange="dvSetCircuitDesc('${ds}','${lift.id}', this.value)">${esc(lift.description||'')}</textarea>
+      <table class="sets">
+        <thead><tr><th>#</th><th>Times Completed</th><th>Done</th><th></th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+      <button class="btn ghost small add-set-btn" onclick="dvAddSet('${ds}','${lift.id}')">+ Log Attempt</button>
+    `;
+  } else {
+    const type = exerciseType(lift.exercise, ex);
+    const isDist = type==='distance';
+    const rowsHtml = (lift.sets||[]).map((s,i)=>`
+      <tr>
+        <td>${i+1}</td>
+        <td><input type="number" min="0" value="${s.reps ?? ''}" placeholder="reps"
+              onchange="dvSetField('${ds}','${lift.id}',${i},'reps',this.value)"></td>
+        <td><input type="number" min="0" step="${isDist?1:2.5}" value="${s.amount ?? ''}" placeholder="${isDist?'metres':'lbs'}"
+              onchange="dvSetField('${ds}','${lift.id}',${i},'amount',this.value)"></td>
+        <td style="text-align:center"><input type="checkbox" class="chk done" ${s.completed?'checked':''}
+              onchange="dvToggleSetBool('${ds}','${lift.id}',${i},'completed')" title="Completed"></td>
+        <td style="text-align:center"><input type="checkbox" class="chk pr" ${s.pr?'checked':''}
+              onchange="dvToggleSetBool('${ds}','${lift.id}',${i},'pr')" title="PR"></td>
+        <td><button class="row-del" onclick="dvRemoveSet('${ds}','${lift.id}',${i})" title="Remove set">✕</button></td>
+      </tr>
+    `).join('');
+    bodyHtml = lift.optOut ? '' : `
+      <table class="sets">
+        <thead><tr><th>#</th><th>Reps</th><th>${isDist?'Metres':'Weight'}</th><th>Done</th><th>PR</th><th></th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+      <button class="btn ghost small add-set-btn" onclick="dvAddSet('${ds}','${lift.id}')">+ Add Set</button>
+    `;
+  }
+
+  const reasonBox = lift.optOut ? `
+    <textarea class="reason-box" placeholder="Why are you opting out of this lift?"
+      onchange="dvSetReason('${ds}','${lift.id}', this.value)">${esc(lift.reason)}</textarea>
+  ` : '';
+
+  const selectorHtml = isCircuit ? `
+    <select class="exercise-select" onchange="dvSetCircuit('${ds}','${lift.id}', this.value)">
+      ${circuits.map(c => `<option value="${esc(c.name)}" ${c.name===lift.exercise?'selected':''}>${esc(c.name)}</option>`).join('')}
+    </select>
+    <div class="newex-row">
+      <input type="text" id="newcirc-${lift.id}" placeholder="or type new circuit…">
+      <button class="btn ghost small" onclick="dvAddCustomCircuit('${ds}','${lift.id}')">Add</button>
+    </div>
+  ` : `
+    <select class="exercise-select" onchange="dvSetExercise('${ds}','${lift.id}', this.value)">
+      ${ex.map(e => `<option value="${esc(e.name)}" ${e.name===lift.exercise?'selected':''}>${esc(e.name)}</option>`).join('')}
+    </select>
+    <div class="newex-row">
+      <input type="text" id="newex-${lift.id}" placeholder="or type new exercise…">
+      <button class="btn ghost small" onclick="dvAddCustomExercise('${ds}','${lift.id}')">Add</button>
+    </div>
+  `;
+
+  return `
+    <div class="lift-card ${optedClass} ${isCircuit?'circuit':''}">
+      <div class="lift-head">
+        ${isCircuit ? '<span class="kind-badge">Circuit</span>' : ''}
+        ${selectorHtml}
+        <label class="optout-toggle">
+          <input type="checkbox" class="chk opt" ${lift.optOut?'checked':''}
+            onchange="dvToggleOptOut('${ds}','${lift.id}')"> Opt out
+        </label>
+      </div>
+      ${bodyHtml}
+      ${reasonBox}
+      <div class="lift-actions">
+        <span></span>
+        <button class="btn danger small" onclick="dvRemoveLift('${ds}','${lift.id}')">Remove</button>
+      </div>
+    </div>
+  `;
+}
+
+/* day view mutation handlers */
+function dvChangeDate(delta){ App.date = addDays(App.date, delta); render(); }
+function dvGoToday(){ App.date = today0(); render(); }
+function dvViewWeek(){ App.weekStart = mondayOf(App.date); App.view='week'; render(); }
+function dvViewMonth(){ App.monthCursor = { y:App.date.getFullYear(), m:App.date.getMonth() }; App.view='month'; render(); }
+
+async function dvAddLift(ds){
+  const ex = await getExercises();
+  const d = await getDay(ds);
+  d.lifts.push({ id: uid(), kind:'exercise', exercise: ex[0]?.name || '', optOut:false, reason:'', sets:[] });
+  await saveDay(ds, d);
+  render();
+}
+async function dvAddCircuitLift(ds){
+  const circuits = await getCircuits();
+  const d = await getDay(ds);
+  const first = circuits[0];
+  d.lifts.push({ id: uid(), kind:'circuit', exercise: first?first.name:'', description: first?first.description:'', optOut:false, reason:'', sets:[] });
+  await saveDay(ds, d);
+  render();
+}
+async function dvRemoveLift(ds, liftId){
+  const d = await getDay(ds);
+  d.lifts = d.lifts.filter(l=>l.id!==liftId);
+  await saveDay(ds, d);
+  let prlog = await getPrLog();
+  prlog = prlog.filter(p=>p.liftId!==liftId);
+  await savePrLog(prlog);
+  render();
+}
+async function dvSetExercise(ds, liftId, value){
+  const d = await getDay(ds);
+  const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
+  l.exercise = value;
+  await saveDay(ds, d);
+  let prlog = await getPrLog(); let changed=false;
+  prlog.forEach(p=>{ if(p.liftId===liftId){ p.exercise=value; changed=true; } });
+  if(changed) await savePrLog(prlog);
+  render();
+}
+async function dvAddCustomExercise(ds, liftId){
+  const inp = document.getElementById('newex-'+liftId);
+  const val = (inp.value||'').trim();
+  if(!val) return;
+  const ex = await getExercises();
+  if(!ex.find(e=>e.name===val)){ ex.push({name:val, type:'weight'}); await saveExercises(ex); }
+  await dvSetExercise(ds, liftId, val);
+}
+async function dvSetCircuit(ds, liftId, value){
+  const d = await getDay(ds);
+  const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
+  const circuits = await getCircuits();
+  const c = circuits.find(x=>x.name===value);
+  l.exercise = value;
+  if(c) l.description = c.description;
+  await saveDay(ds, d);
+  render();
+}
+async function dvAddCustomCircuit(ds, liftId){
+  const inp = document.getElementById('newcirc-'+liftId);
+  const val = (inp.value||'').trim();
+  if(!val) return;
+  const circuits = await getCircuits();
+  if(!circuits.find(c=>c.name===val)){ circuits.push({name:val, description:''}); await saveCircuits(circuits); }
+  await dvSetCircuit(ds, liftId, val);
+}
+async function dvSetCircuitDesc(ds, liftId, value){
+  const d = await getDay(ds);
+  const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
+  l.description = value;
+  const circuits = await getCircuits();
+  const c = circuits.find(x=>x.name===l.exercise);
+  if(c){ c.description = value; await saveCircuits(circuits); }
+  await saveDay(ds, d);
+}
+async function dvToggleOptOut(ds, liftId){
+  const d = await getDay(ds);
+  const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
+  l.optOut = !l.optOut;
+  await saveDay(ds, d);
+  render();
+}
+async function dvSetReason(ds, liftId, value){
+  const d = await getDay(ds);
+  const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
+  l.reason = value;
+  await saveDay(ds, d);
+}
+async function dvAddSet(ds, liftId){
+  const d = await getDay(ds);
+  const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
+  if(l.kind==='circuit') l.sets.push({ rounds:'', completed:false });
+  else l.sets.push({ reps:'', amount:'', completed:false, pr:false });
+  await saveDay(ds, d);
+  render();
+}
+async function dvRemoveSet(ds, liftId, idx){
+  const d = await getDay(ds);
+  const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
+  const removed = l.sets[idx];
+  l.sets.splice(idx,1);
+  await saveDay(ds, d);
+  if(removed && removed.pr){
+    let prlog = await getPrLog();
+    prlog = prlog.filter(p=>!(p.liftId===liftId && p.setIdx===idx));
+    await savePrLog(prlog);
+  }
+  render();
+}
+async function dvSetField(ds, liftId, idx, field, value){
+  const d = await getDay(ds);
+  const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
+  l.sets[idx][field] = value===''? '' : Number(value);
+  await saveDay(ds, d);
+  if(l.sets[idx].pr){
+    let prlog = await getPrLog();
+    const entry = prlog.find(p=>p.liftId===liftId && p.setIdx===idx);
+    if(entry){ entry.amount = l.sets[idx].amount; entry.reps = l.sets[idx].reps; await savePrLog(prlog); }
+  }
+}
+async function dvToggleSetBool(ds, liftId, idx, field){
+  const d = await getDay(ds);
+  const l = d.lifts.find(x=>x.id===liftId); if(!l) return;
+  l.sets[idx][field] = !l.sets[idx][field];
+  await saveDay(ds, d);
+  if(field==='pr'){
+    let prlog = await getPrLog();
+    if(l.sets[idx].pr){
+      const ex = await getExercises();
+      const unit = exerciseType(l.exercise, ex)==='distance' ? 'm' : 'lbs';
+      prlog = prlog.filter(p=>!(p.liftId===liftId && p.setIdx===idx));
+      prlog.push({ id: uid(), liftId, setIdx: idx, date: ds, exercise: l.exercise, amount: l.sets[idx].amount, reps: l.sets[idx].reps, unit });
+    } else {
+      prlog = prlog.filter(p=>!(p.liftId===liftId && p.setIdx===idx));
+    }
+    await savePrLog(prlog);
+  }
+  render();
+}
+
+/* ================= WEEK VIEW ================= */
+async function renderWeekView(){
+  const start = App.weekStart;
+  const end = addDays(start, 6);
+  let cards = '';
+  for(let i=0;i<7;i++){
+    const d = addDays(start, i);
+    const ds = dateStr(d);
+    const data = await getDay(ds);
+    const status = dayStatus(data);
+    const names = data.lifts.slice(0,3).map(l=>esc(l.exercise)).join(', ');
+    const more = data.lifts.length>3 ? ` +${data.lifts.length-3} more` : '';
+    cards += `
+      <div class="day-card ${sameDate(d, today0())?'today':''}" onclick="wvGoToDay('${ds}')">
+        <div class="dname">${WEEKDAY_NAMES[i]}</div>
+        <div class="dnum">${d.getDate()}</div>
+        <div><span class="status-dot dot-${status}"></span><span class="exlist">${statusLabel(status)}</span></div>
+        <div class="exlist">${names}${more}</div>
+      </div>
+    `;
+  }
+  const rangeLabel = `${start.toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${end.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;
+  return `
+    <div class="day-header">
+      <div class="day-title display">${rangeLabel}</div>
+      <div class="day-nav">
+        <button class="icon-btn" onclick="wvChangeWeek(-1)">‹</button>
+        <button class="btn ghost small" onclick="wvThisWeek()">This Week</button>
+        <button class="icon-btn" onclick="wvChangeWeek(1)">›</button>
+      </div>
+      <div class="view-links"><button class="btn ghost small" onclick="setView('month')">View Month</button></div>
+    </div>
+    <div class="week-grid">${cards}</div>
+  `;
+}
+function statusLabel(s){
+  return {none:'No log', done:'All done', partial:'In progress', logged:'Logged', optout:'Opted out'}[s] || '';
+}
+function wvChangeWeek(delta){ App.weekStart = addDays(App.weekStart, delta*7); render(); }
+function wvThisWeek(){ App.weekStart = mondayOf(today0()); render(); }
+function wvGoToDay(ds){ App.date = parseDateStr(ds); App.view='day'; render(); }
+
+/* ================= MONTH VIEW ================= */
+async function renderMonthView(){
+  const { y, m } = App.monthCursor;
+  const firstOfMonth = new Date(y, m, 1);
+  const gridStart = mondayOf(firstOfMonth);
+  const monthLabel = `${MONTH_NAMES[m]} ${y}`;
+
+  const keys = await listKeys('day:');
+  const cache = {};
+  const gridDates = [];
+  for(let i=0;i<42;i++) gridDates.push(addDays(gridStart,i));
+  const relevantKeys = gridDates.map(d=>'day:'+dateStr(d)).filter(k=>keys.includes(k));
+  for(const k of relevantKeys){ cache[k] = await getItem(k); }
+
+  let weeksHtml = '';
+  for(let w=0; w<6; w++){
+    const weekStart = addDays(gridStart, w*7);
+    let cells = '';
+    for(let i=0;i<7;i++){
+      const d = addDays(weekStart, i);
+      const ds = dateStr(d);
+      const data = cache['day:'+ds] || { lifts: [] };
+      const status = dayStatus(data);
+      const outside = d.getMonth()!==m;
+      cells += `
+        <div class="month-cell ${outside?'outside':''} ${sameDate(d, today0())?'today':''}" onclick="mvGoToDay('${ds}')">
+          <div class="mnum">${d.getDate()}</div>
+          <span class="status-dot dot-${status}"></span>
+        </div>
+      `;
+    }
+    weeksHtml += `
+      <div class="week-row">
+        <button class="week-btn" onclick="mvGoToWeek('${dateStr(weekStart)}')" title="View week">WK</button>
+        ${cells}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="month-head">
+      <div class="day-title display">${monthLabel}</div>
+      <div class="day-nav">
+        <button class="icon-btn" onclick="mvChangeMonth(-1)">‹</button>
+        <button class="btn ghost small" onclick="mvThisMonth()">Today</button>
+        <button class="icon-btn" onclick="mvChangeMonth(1)">›</button>
+      </div>
+    </div>
+    <div class="weekday-row"><div></div>${WEEKDAY_NAMES.map(n=>`<div>${n}</div>`).join('')}</div>
+    ${weeksHtml}
+  `;
+}
+function mvChangeMonth(delta){
+  let { y, m } = App.monthCursor;
+  m += delta;
+  if(m<0){ m=11; y--; } else if(m>11){ m=0; y++; }
+  App.monthCursor = { y, m };
+  render();
+}
+function mvThisMonth(){ const t=today0(); App.monthCursor = { y:t.getFullYear(), m:t.getMonth() }; render(); }
+function mvGoToDay(ds){ App.date = parseDateStr(ds); App.view='day'; render(); }
+function mvGoToWeek(ds){ App.weekStart = parseDateStr(ds); App.view='week'; render(); }
+
+/* ================= PR VIEW ================= */
+async function renderPRView(){
+  const prlog = await getPrLog();
+  const exSet = Array.from(new Set(prlog.map(p=>p.exercise))).sort();
+  if(!App.prExercise || !exSet.includes(App.prExercise)) App.prExercise = exSet[0] || null;
+
+  const controls = `
+    <div class="pr-controls">
+      <label style="font-weight:600;font-size:14px;">Exercise:</label>
+      <select onchange="prSelectExercise(this.value)">
+        ${exSet.length===0 ? '<option>No PRs logged yet</option>' :
+          exSet.map(name=>`<option value="${esc(name)}" ${name===App.prExercise?'selected':''}>${esc(name)}</option>`).join('')}
+      </select>
+    </div>
+  `;
+
+  if(!App.prExercise){
+    return controls + `<div class="empty-note">Mark a set with the star (★) checkbox in the Log tab to start tracking PRs.</div>`;
+  }
+
+  const entries = prlog.filter(p=>p.exercise===App.prExercise)
+    .sort((a,b)=> a.date.localeCompare(b.date));
+  const unit = entries[0]?.unit || 'lbs';
+  const unitLabel = unit==='m' ? 'Metres' : 'Weight';
+  const best = entries.reduce((m,e)=> (Number(e.amount)||0) > (Number(m?.amount)||0) ? e : m, null);
+
+  const chart = renderPRChart(entries);
+
+  const rows = entries.slice().reverse().map(e => `
+    <tr>
+      <td>${parseDateStr(e.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</td>
+      <td>${e.amount ?? '—'} ${unit}</td>
+      <td>${e.reps || '—'}</td>
+      <td>${best && e.id===best.id ? '<span class="best-badge">BEST</span>' : ''}</td>
+    </tr>
+  `).join('');
+
+  return `
+    ${controls}
+    <div class="chart-wrap">${chart}</div>
+    <table class="pr-table">
+      <thead><tr><th>Date</th><th>${unitLabel}</th><th>Reps</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+function prSelectExercise(v){ App.prExercise = v; render(); }
+
+function renderPRChart(entries){
+  if(entries.length===0) return `<div class="empty-note">No data to chart.</div>`;
+  const w=800,h=200,pad=32;
+  const amounts = entries.map(e=>Number(e.amount)||0);
+  const min = Math.min(...amounts), max = Math.max(...amounts);
+  const range = (max-min) || 1;
+  const stepX = entries.length>1 ? (w-2*pad)/(entries.length-1) : 0;
+  const pts = entries.map((e,i)=>{
+    const x = pad + i*stepX;
+    const y = h-pad - ((Number(e.amount)||0)-min)/range*(h-2*pad);
+    return [x,y];
+  });
+  const path = pts.map((p,i)=> (i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  const dots = pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="5" fill="#FF8A3D" stroke="#fff" stroke-width="1.5"/>`).join('');
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;">
+    <line x1="${pad}" y1="${h-pad}" x2="${w-pad}" y2="${h-pad}" stroke="#EFE3D0" stroke-width="2"/>
+    <path d="${path}" fill="none" stroke="#3FA968" stroke-width="3"/>
+    ${dots}
+  </svg>`;
+}
+
+/* ================= EXERCISES VIEW ================= */
+async function renderExercisesView(){
+  const ex = await getExercises();
+  const chips = ex.map(e => `
+    <div class="chip">
+      ${esc(e.name)}
+      <select class="type-mini" onchange="exSetType('${encodeURIComponent(e.name)}', this.value)">
+        <option value="weight" ${e.type==='weight'?'selected':''}>Weight</option>
+        <option value="distance" ${e.type==='distance'?'selected':''}>Distance (m)</option>
+      </select>
+      <button onclick="exRemove('${encodeURIComponent(e.name)}')" title="Remove">✕</button>
+    </div>
+  `).join('');
+  return `
+    <h3 style="margin-bottom:14px;">Your Exercises</h3>
+    <div class="chip-list">${chips || '<span class="exlist">No exercises yet.</span>'}</div>
+    <div class="add-ex-row">
+      <input type="text" id="new-exercise-input" placeholder="e.g. Trap Bar Deadlift">
+      <select id="new-exercise-type">
+        <option value="weight">Weight</option>
+        <option value="distance">Distance (m)</option>
+      </select>
+      <button class="btn" onclick="exAdd()">+ Add Exercise</button>
+    </div>
+  `;
+}
+async function exAdd(){
+  const inp = document.getElementById('new-exercise-input');
+  const typeSel = document.getElementById('new-exercise-type');
+  const val = (inp.value||'').trim();
+  if(!val) return;
+  const ex = await getExercises();
+  if(!ex.find(e=>e.name===val)) ex.push({name:val, type: typeSel.value});
+  await saveExercises(ex);
+  render();
+}
+async function exRemove(encodedName){
+  const name = decodeURIComponent(encodedName);
+  let ex = await getExercises();
+  ex = ex.filter(e=>e.name!==name);
+  await saveExercises(ex);
+  render();
+}
+async function exSetType(encodedName, type){
+  const name = decodeURIComponent(encodedName);
+  const ex = await getExercises();
+  const e = ex.find(x=>x.name===name);
+  if(e){ e.type = type; await saveExercises(ex); }
+  render();
+}
+
+/* ================= CIRCUITS VIEW ================= */
+async function renderCircuitsView(){
+  const circuits = await getCircuits();
+  const rows = circuits.map(c=>`
+    <div class="circuit-tpl">
+      <div class="circuit-tpl-head">
+        <strong>${esc(c.name)}</strong>
+        <button class="row-del" onclick="circRemove('${encodeURIComponent(c.name)}')" title="Remove">✕</button>
+      </div>
+      <textarea class="reason-box" onchange="circSetDesc('${encodeURIComponent(c.name)}', this.value)"
+        placeholder="Describe the circuit, e.g. 20m A-skip, 20m B-skip, 20m sprint @ 90%">${esc(c.description||'')}</textarea>
+    </div>
+  `).join('');
+  return `
+    <h3 style="margin-bottom:14px;">Your Circuits</h3>
+    <div class="circuit-list">${rows || '<span class="exlist">No circuits yet. Add one below — e.g. name it "Bullet" and describe it as 20m A-skip, 20m B-skip, 20m sprint @ 90%.</span>'}</div>
+    <div class="add-ex-row">
+      <input type="text" id="new-circuit-name" placeholder="Circuit name, e.g. Bullet">
+    </div>
+    <textarea class="reason-box" id="new-circuit-desc" placeholder="Description, e.g. 20m A-skip, 20m B-skip, 20m sprint @ 90%" style="margin:8px 0;"></textarea>
+    <button class="btn" onclick="circAdd()">+ Add Circuit</button>
+  `;
+}
+async function circAdd(){
+  const nameInp = document.getElementById('new-circuit-name');
+  const descInp = document.getElementById('new-circuit-desc');
+  const name = (nameInp.value||'').trim();
+  const desc = (descInp.value||'').trim();
+  if(!name) return;
+  const circuits = await getCircuits();
+  if(!circuits.find(c=>c.name===name)) circuits.push({name, description:desc});
+  await saveCircuits(circuits);
+  render();
+}
+async function circRemove(encodedName){
+  const name = decodeURIComponent(encodedName);
+  let circuits = await getCircuits();
+  circuits = circuits.filter(c=>c.name!==name);
+  await saveCircuits(circuits);
+  render();
+}
+async function circSetDesc(encodedName, value){
+  const name = decodeURIComponent(encodedName);
+  let circuits = await getCircuits();
+  const c = circuits.find(x=>x.name===name);
+  if(c){ c.description = value; await saveCircuits(circuits); }
+}
+
+init();
+</script>
+</body>
+</html>
