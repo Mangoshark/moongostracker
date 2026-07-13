@@ -166,9 +166,10 @@
     background:#fff;
   }
   select:focus, input:focus, textarea:focus{outline:2px solid var(--mango);outline-offset:1px;}
-  .exercise-select{font-weight:600;font-size:16px;min-width:190px;}
-  .newex-row{display:flex;gap:6px;align-items:center;}
-  .newex-row input{width:140px;}
+  .exercise-select{font-weight:600;font-size:16px;min-width:190px;flex:1 1 190px;max-width:280px;}
+
+  .condense-toggle{background:transparent;border:1.5px solid var(--line);border-radius:999px;color:var(--ink-soft);font-size:12.5px;font-weight:700;padding:5px 11px;font-family:'Barlow Condensed';text-transform:uppercase;letter-spacing:0.03em;}
+  .condense-toggle:hover{border-color:var(--mango);color:var(--mango-deep);}
 
   .optout-toggle{display:flex;align-items:center;gap:6px;margin-left:auto;font-size:13px;color:var(--ink-soft);font-weight:600;}
   .reason-box{width:100%;min-height:54px;resize:vertical;margin-top:8px;font-size:14px;}
@@ -180,6 +181,18 @@
   }
   table.sets td{padding:5px 6px;vertical-align:middle;}
   table.sets input[type=number]{width:64px;}
+
+  /* condensed set rows (mobile-friendly checklist view) */
+  .cset-row{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--line);}
+  .cset-row:last-child{border-bottom:none;}
+  .cset-num{font-family:'Barlow Condensed';font-weight:700;color:var(--ink-soft);width:16px;text-align:center;font-size:14px;}
+  .cset-input{width:56px !important;padding:6px 6px !important;text-align:center;}
+  .cset-x{color:var(--ink-soft);font-size:13px;}
+  .cset-row .chk{width:24px;height:24px;flex-shrink:0;}
+  .cset-row .row-del{margin-left:auto;}
+
+  .quick-add{display:flex;align-items:center;gap:6px;margin-top:8px;}
+  .quick-add input[type=number]{width:56px;text-align:center;}
 
   /* custom checkboxes */
   .chk{
@@ -454,7 +467,7 @@ const DEFAULT_CIRCUITS = [
 /* ---------- app state ---------- */
 const App = { view:'day', date:new Date(), weekStart:null, monthCursor:null, exercises:null, circuits:null,
   progressExercise:null, progressSelected:null, progressPoints:[], progressOptouts:[],
-  exportFrom:null, exportTo:null };
+  exportFrom:null, exportTo:null, condensed:{} };
 
 async function getDay(ds){ const v = await getItem('day:'+ds); return v || { lifts: [] }; }
 async function saveDay(ds, data){ await setItem('day:'+ds, data); }
@@ -597,52 +610,91 @@ async function renderDayView(){
 function renderLiftCard(ds, lift, ex, circuits){
   const optedClass = lift.optOut ? 'opted' : '';
   const isCircuit = lift.kind === 'circuit';
+  const condensed = !!App.condensed[lift.id];
 
   let bodyHtml = '';
   if(isCircuit){
-    const rowsHtml = (lift.sets||[]).map((s,i)=>`
-      <tr>
-        <td>${i+1}</td>
-        <td><input type="number" min="0" value="${s.rounds ?? ''}" placeholder="times"
-              onchange="dvSetField('${ds}','${lift.id}',${i},'rounds',this.value)"></td>
-        <td style="text-align:center"><input type="checkbox" class="chk done" ${s.completed?'checked':''}
-              onchange="dvToggleSetBool('${ds}','${lift.id}',${i},'completed')" title="Completed"></td>
-        <td><button class="row-del" onclick="dvRemoveSet('${ds}','${lift.id}',${i})" title="Remove">✕</button></td>
-      </tr>
-    `).join('');
-    bodyHtml = lift.optOut ? '' : `
-      <textarea class="reason-box" placeholder="Circuit description, e.g. 20m A-skip, 20m B-skip, 20m sprint @ 90%"
-        onchange="dvSetCircuitDesc('${ds}','${lift.id}', this.value)">${esc(lift.description||'')}</textarea>
-      <table class="sets">
-        <thead><tr><th>#</th><th>Times Completed</th><th>Done</th><th></th></tr></thead>
-        <tbody>${rowsHtml}</tbody>
-      </table>
-      <button class="btn ghost small add-set-btn" onclick="dvAddSet('${ds}','${lift.id}')">+ Log Attempt</button>
-    `;
+    if(condensed){
+      const rowsHtml = (lift.sets||[]).map((s,i)=>`
+        <div class="cset-row">
+          <span class="cset-num">${i+1}</span>
+          <input type="number" min="0" class="cset-input" value="${s.rounds ?? ''}" placeholder="×"
+            onchange="dvSetField('${ds}','${lift.id}',${i},'rounds',this.value)">
+          <span class="cset-x">times</span>
+          <input type="checkbox" class="chk done" ${s.completed?'checked':''}
+            onchange="dvToggleSetBool('${ds}','${lift.id}',${i},'completed')" title="Done">
+          <button class="row-del" onclick="dvRemoveSet('${ds}','${lift.id}',${i})" title="Remove">✕</button>
+        </div>
+      `).join('');
+      bodyHtml = lift.optOut ? '' : `
+        ${rowsHtml}
+        ${quickAddHtml(ds, lift, 'Log Attempt')}
+      `;
+    } else {
+      const rowsHtml = (lift.sets||[]).map((s,i)=>`
+        <tr>
+          <td>${i+1}</td>
+          <td><input type="number" min="0" value="${s.rounds ?? ''}" placeholder="times"
+                onchange="dvSetField('${ds}','${lift.id}',${i},'rounds',this.value)"></td>
+          <td style="text-align:center"><input type="checkbox" class="chk done" ${s.completed?'checked':''}
+                onchange="dvToggleSetBool('${ds}','${lift.id}',${i},'completed')" title="Completed"></td>
+          <td><button class="row-del" onclick="dvRemoveSet('${ds}','${lift.id}',${i})" title="Remove">✕</button></td>
+        </tr>
+      `).join('');
+      bodyHtml = lift.optOut ? '' : `
+        <textarea class="reason-box" placeholder="Circuit description, e.g. 20m A-skip, 20m B-skip, 20m sprint @ 90%"
+          onchange="dvSetCircuitDesc('${ds}','${lift.id}', this.value)">${esc(lift.description||'')}</textarea>
+        <table class="sets">
+          <thead><tr><th>#</th><th>Times Completed</th><th>Done</th><th></th></tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+        ${quickAddHtml(ds, lift, 'Log Attempt')}
+      `;
+    }
   } else {
     const type = exerciseType(lift.exercise, ex);
     const isDist = type==='distance';
-    const rowsHtml = (lift.sets||[]).map((s,i)=>`
-      <tr>
-        <td>${i+1}</td>
-        <td><input type="number" min="0" value="${s.reps ?? ''}" placeholder="reps"
-              onchange="dvSetField('${ds}','${lift.id}',${i},'reps',this.value)"></td>
-        <td><input type="number" min="0" step="${isDist?1:2.5}" value="${s.amount ?? ''}" placeholder="${isDist?'metres':'lbs'}"
-              onchange="dvSetField('${ds}','${lift.id}',${i},'amount',this.value)"></td>
-        <td style="text-align:center"><input type="checkbox" class="chk done" ${s.completed?'checked':''}
-              onchange="dvToggleSetBool('${ds}','${lift.id}',${i},'completed')" title="Completed"></td>
-        <td style="text-align:center"><input type="checkbox" class="chk pr" ${s.pr?'checked':''}
-              onchange="dvToggleSetBool('${ds}','${lift.id}',${i},'pr')" title="PR"></td>
-        <td><button class="row-del" onclick="dvRemoveSet('${ds}','${lift.id}',${i})" title="Remove set">✕</button></td>
-      </tr>
-    `).join('');
-    bodyHtml = lift.optOut ? '' : `
-      <table class="sets">
-        <thead><tr><th>#</th><th>Reps</th><th>${isDist?'Metres':'Weight'}</th><th>Done</th><th>PR</th><th></th></tr></thead>
-        <tbody>${rowsHtml}</tbody>
-      </table>
-      <button class="btn ghost small add-set-btn" onclick="dvAddSet('${ds}','${lift.id}')">+ Add Set</button>
-    `;
+    if(condensed){
+      const rowsHtml = (lift.sets||[]).map((s,i)=>`
+        <div class="cset-row">
+          <span class="cset-num">${i+1}</span>
+          <input type="number" min="0" class="cset-input" value="${s.reps ?? ''}" placeholder="reps"
+            onchange="dvSetField('${ds}','${lift.id}',${i},'reps',this.value)">
+          <span class="cset-x">×</span>
+          <input type="number" min="0" step="${isDist?1:2.5}" class="cset-input" value="${s.amount ?? ''}" placeholder="${isDist?'m':'lbs'}"
+            onchange="dvSetField('${ds}','${lift.id}',${i},'amount',this.value)">
+          <input type="checkbox" class="chk done" ${s.completed?'checked':''}
+            onchange="dvToggleSetBool('${ds}','${lift.id}',${i},'completed')" title="Done">
+          <button class="row-del" onclick="dvRemoveSet('${ds}','${lift.id}',${i})" title="Remove set">✕</button>
+        </div>
+      `).join('');
+      bodyHtml = lift.optOut ? '' : `
+        ${rowsHtml}
+        ${quickAddHtml(ds, lift, 'Add Set')}
+      `;
+    } else {
+      const rowsHtml = (lift.sets||[]).map((s,i)=>`
+        <tr>
+          <td>${i+1}</td>
+          <td><input type="number" min="0" value="${s.reps ?? ''}" placeholder="reps"
+                onchange="dvSetField('${ds}','${lift.id}',${i},'reps',this.value)"></td>
+          <td><input type="number" min="0" step="${isDist?1:2.5}" value="${s.amount ?? ''}" placeholder="${isDist?'metres':'lbs'}"
+                onchange="dvSetField('${ds}','${lift.id}',${i},'amount',this.value)"></td>
+          <td style="text-align:center"><input type="checkbox" class="chk done" ${s.completed?'checked':''}
+                onchange="dvToggleSetBool('${ds}','${lift.id}',${i},'completed')" title="Completed"></td>
+          <td style="text-align:center"><input type="checkbox" class="chk pr" ${s.pr?'checked':''}
+                onchange="dvToggleSetBool('${ds}','${lift.id}',${i},'pr')" title="PR"></td>
+          <td><button class="row-del" onclick="dvRemoveSet('${ds}','${lift.id}',${i})" title="Remove set">✕</button></td>
+        </tr>
+      `).join('');
+      bodyHtml = lift.optOut ? '' : `
+        <table class="sets">
+          <thead><tr><th>#</th><th>Reps</th><th>${isDist?'Metres':'Weight'}</th><th>Done</th><th>PR</th><th></th></tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+        ${quickAddHtml(ds, lift, 'Add Set')}
+      `;
+    }
   }
 
   const reasonBox = lift.optOut ? `
@@ -656,21 +708,17 @@ function renderLiftCard(ds, lift, ex, circuits){
   `;
 
   const selectorHtml = isCircuit ? `
-    <select class="exercise-select" onchange="dvSetCircuit('${ds}','${lift.id}', this.value)">
-      ${circuits.map(c => `<option value="${esc(c.name)}" ${c.name===lift.exercise?'selected':''}>${esc(c.name)}</option>`).join('')}
-    </select>
-    <div class="newex-row">
-      <input type="text" id="newcirc-${lift.id}" placeholder="or type new circuit…">
-      <button class="btn ghost small" onclick="dvAddCustomCircuit('${ds}','${lift.id}')">Add</button>
-    </div>
+    <input type="text" list="circlist-${lift.id}" class="exercise-select" value="${esc(lift.exercise)}"
+      placeholder="Search or type new circuit…" onchange="dvPickCircuit('${ds}','${lift.id}', this.value)">
+    <datalist id="circlist-${lift.id}">
+      ${circuits.map(c => `<option value="${esc(c.name)}">`).join('')}
+    </datalist>
   ` : `
-    <select class="exercise-select" onchange="dvSetExercise('${ds}','${lift.id}', this.value)">
-      ${ex.map(e => `<option value="${esc(e.name)}" ${e.name===lift.exercise?'selected':''}>${esc(e.name)}</option>`).join('')}
-    </select>
-    <div class="newex-row">
-      <input type="text" id="newex-${lift.id}" placeholder="or type new exercise…">
-      <button class="btn ghost small" onclick="dvAddCustomExercise('${ds}','${lift.id}')">Add</button>
-    </div>
+    <input type="text" list="exlist-${lift.id}" class="exercise-select" value="${esc(lift.exercise)}"
+      placeholder="Search or type new exercise…" onchange="dvPickExercise('${ds}','${lift.id}', this.value)">
+    <datalist id="exlist-${lift.id}">
+      ${ex.map(e => `<option value="${esc(e.name)}">`).join('')}
+    </datalist>
   `;
 
   return `
@@ -678,6 +726,9 @@ function renderLiftCard(ds, lift, ex, circuits){
       <div class="lift-head">
         ${isCircuit ? '<span class="kind-badge">Circuit</span>' : ''}
         ${selectorHtml}
+        <button class="condense-toggle" onclick="dvToggleCondensed('${lift.id}')" title="Toggle compact view">
+          ${condensed ? '⤢ Expand' : '⤡ Condense'}
+        </button>
         <label class="optout-toggle">
           <input type="checkbox" class="chk opt" ${lift.optOut?'checked':''}
             onchange="dvToggleOptOut('${ds}','${lift.id}')"> Opt out
@@ -687,9 +738,19 @@ function renderLiftCard(ds, lift, ex, circuits){
       ${notesBox}
       ${reasonBox}
       <div class="lift-actions">
-        <span></span>
+        <button class="btn ghost small" onclick="dvSaveLift(this)">💾 Save</button>
         <button class="btn danger small" onclick="dvRemoveLift('${ds}','${lift.id}')">Remove</button>
       </div>
+    </div>
+  `;
+}
+
+function quickAddHtml(ds, lift, label){
+  return `
+    <div class="quick-add">
+      <button class="btn ghost small add-set-btn" onclick="dvAddSet('${ds}','${lift.id}')">+ ${label}</button>
+      <input type="number" min="1" max="30" id="qty-${lift.id}" placeholder="#">
+      <button class="btn ghost small" onclick="dvQuickAddSets('${ds}','${lift.id}')">Add multiple</button>
     </div>
   `;
 }
@@ -734,13 +795,12 @@ async function dvSetExercise(ds, liftId, value){
   if(changed) await savePrLog(prlog);
   render();
 }
-async function dvAddCustomExercise(ds, liftId){
-  const inp = document.getElementById('newex-'+liftId);
-  const val = (inp.value||'').trim();
-  if(!val) return;
+async function dvPickExercise(ds, liftId, value){
+  value = (value||'').trim();
+  if(!value) return;
   const ex = await getExercises();
-  if(!ex.find(e=>e.name===val)){ ex.push({name:val, type:'weight'}); await saveExercises(ex); }
-  await dvSetExercise(ds, liftId, val);
+  if(!ex.find(e=>e.name===value)){ ex.push({name:value, type:'weight'}); await saveExercises(ex); }
+  await dvSetExercise(ds, liftId, value);
 }
 async function dvSetCircuit(ds, liftId, value){
   const d = await getDay(ds);
